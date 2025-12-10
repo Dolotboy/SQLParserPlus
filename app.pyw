@@ -140,11 +140,24 @@ def main():
 
     # --- Zoom molette ---
     def zoom(event):
-        factor = 1.1 if event.delta > 0 else 0.9
+        # Windows / macOS: event.delta est non nul
+        if hasattr(event, "delta") and event.delta != 0:
+            factor = 1.1 if event.delta > 0 else 0.9
+        else:
+            # Linux/X11: on regarde le bouton utilisé
+            if event.num == 4:      # molette vers le haut
+                factor = 1.1
+            elif event.num == 5:    # molette vers le bas
+                factor = 0.9
+            else:
+                return
+
         canvas.scale("all", event.x, event.y, factor, factor)
         canvas.configure(scrollregion=canvas.bbox("all"))
 
-    canvas.bind("<MouseWheel>", zoom)
+    canvas.bind("<MouseWheel>", zoom)   # Windows / macOS
+    canvas.bind("<Button-4>", zoom)     # Linux scroll up
+    canvas.bind("<Button-5>", zoom)     # Linux scroll down
 
     # --- Pan avec molette tenue ---
     def start_pan(event):
