@@ -148,12 +148,6 @@ def main():
 
     # --- Objets initiaux ---
     file_label_id = canvas.create_text(10, 10, anchor="nw", text="Aucun fichier chargé", fill="black", font=("Arial", 10))
-    blue_square = canvas.create_rectangle(50, 50, 150, 150, fill="blue")
-
-    uml_rect = canvas.create_rectangle(250, 50, 400, 120, fill="lightgrey")
-    uml_text = canvas.create_text(325, 85, text="MaClasse", font=("Arial", 12, "bold"))
-    canvas.addtag_withtag("uml_block", uml_rect)
-    canvas.addtag_withtag("uml_block", uml_text)
 
     # --- Déplacement des blocs ---
     drag_data = {"x": 0, "y": 0, "item": None}
@@ -190,9 +184,69 @@ def main():
     def on_release(event):
         drag_data["item"] = None
 
+    def edit_text_item(item):
+        # Retrieve current text and coordinates
+        current_text = canvas.itemcget(item, "text")
+        bbox = canvas.bbox(item)
+        if not bbox:
+            return
+            
+        x, y = bbox[0], bbox[1]
+        width = bbox[2] - bbox[0]
+        height = bbox[3] - bbox[1]
+
+        # Use a frame or entry directly. Here an Entry is sufficient.
+        # We need to place it on top of the canvas item.
+        entry = tk.Entry(canvas, highlightthickness=0, relief="flat", font="Arial 12 bold")
+        entry.insert(0, current_text)
+        entry.focus_force()
+
+        # Place the entry widget. scaling might be tricky if zoomed, 
+        # but bbox gives canvas coords. We need window coords for .place() if we use it on frame
+        # OR we can use create_window on the canvas. create_window is better for scrolling/zooming support usually,
+        # but editing while zoomed is complex. 
+        # For simplicity, let's use create_window at the item's position.
+        
+        # Center of the item
+        center_x = (bbox[0] + bbox[2]) / 2
+        center_y = (bbox[1] + bbox[3]) / 2
+        
+        window_id = canvas.create_window(center_x, center_y, window=entry, width=width+20, height=height+5)
+
+        def save_edit(event=None):
+            new_text = entry.get()
+            canvas.itemconfig(item, text=new_text)
+            canvas.delete(window_id)
+            # Refocus canvas to ensure keys work
+            canvas.focus_set()
+
+        def cancel_edit(event=None):
+            canvas.delete(window_id)
+            canvas.focus_set()
+
+        entry.bind("<Return>", save_edit)
+        entry.bind("<FocusOut>", save_edit) # Auto-save on click away
+        entry.bind("<Escape>", cancel_edit)
+
+    def on_double_click(event):
+        # Find item closest to click
+        items = canvas.find_closest(event.x, event.y)
+        if not items:
+            return
+        item = items[0]
+        
+        # Check if it is a text object and part of a uml_block
+        tags = canvas.gettags(item)
+        is_uml_block = any(tag.startswith("uml_block") for tag in tags)
+        item_type = canvas.type(item)
+        
+        if is_uml_block and item_type == "text":
+            edit_text_item(item)
+
     canvas.bind("<Button-1>", on_click)
     canvas.bind("<B1-Motion>", on_drag)
     canvas.bind("<ButtonRelease-1>", on_release)
+    canvas.bind("<Double-Button-1>", on_double_click)
 
     # --- Zoom molette ---
     def zoom(event):
