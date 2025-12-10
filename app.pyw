@@ -15,17 +15,44 @@ def main():
     # Variables partagées dans main()
     script = None
     filename = None
+    file_label_id = None
 
     # --- Fonctions de menu / fichier ---
 
-    def parse(selected_file: str):
+    def load_sql(selected_file: str):
         nonlocal script
-        script = sqlp.Script(selected_file)
+        try:
+            script = sqlp.Script(selected_file)
+            print(f"Successfully parsed {selected_file}")
+            if file_label_id:
+                canvas.itemconfig(file_label_id, text=f"Fichier : {selected_file}")
+            load_uml()
+        except Exception as e:
+            print(f"Error parsing file: {e}")
+            script = None
+
+    def load_json(selected_file: str):
+        nonlocal script
+        print("Loading JSON")
+        try:
+            print(f"Successfully loaded {selected_file}")
+            if file_label_id:
+                canvas.itemconfig(file_label_id, text=f"Fichier : {selected_file}")
+            load_uml()
+        except Exception as e:
+            print(f"Error loading file: {e}")
+            script = None
+
+    def load_uml():
+        print("Loading UML")
+        for table in script.tables:
+            print(f"Table : {table.name}")
+            add_table_block(table.name)
 
     def select_file():
         nonlocal filename
         filetypes = (
-            ("Text files", "*.txt"),
+            ("SQL & JSON files", "*.sql *.json"),
             ("All files", "*.*"),
         )
 
@@ -37,23 +64,35 @@ def main():
 
         if selected:
             filename = selected
-            parse(filename)
+            if filename.lower().endswith(".sql"):
+                print("SQL File selected")
+                load_sql(filename)
+            elif filename.lower().endswith(".json"):
+                print("JSON File selected")
+                load_json(filename)
 
-    def output_to_json():
+    def output_to_json(output_path: str):
         nonlocal script
         if script is None:
             # Rien n'a été chargé, on ne fait rien
+            print("Nothing to save...")
             return
-
-        path = askdirectory(title="Choose output directory")
-        if not path:
-            return
-
-        output_path = os.path.join(path, "output.json")
 
         # Crée ou écrase le fichier
         with open(output_path, "w", encoding="utf-8") as outfile:
             outfile.write(script.to_json())
+        print(f"Successfully saved {output_path}")
+
+    def save():
+        nonlocal filename
+        if not filename.lower().endswith(".json") or not filename:
+            path = askdirectory(title="Choose output directory")
+            if not path:
+                return
+            output_path = os.path.join(path, "output.json")
+            output_to_json(output_path)
+        else:
+            output_to_json(filename)
 
     # --- Frame principal ---
     main_frame = tk.Frame(root)
@@ -66,7 +105,7 @@ def main():
     file_menu = Menu(menubar, tearoff=0)
     menubar.add_cascade(label="File", menu=file_menu)
     file_menu.add_command(label="Open...", command=select_file)
-    file_menu.add_command(label="Save", command=output_to_json)
+    file_menu.add_command(label="Save", command=save)
     file_menu.add_separator()
     file_menu.add_command(label="Exit", command=root.destroy)
 
@@ -88,6 +127,12 @@ def main():
     def add_circle():
         canvas.create_oval(300, 200, 400, 300, fill="green")
 
+    def add_table_block(table_name: str):
+        uml_rect = canvas.create_rectangle(250, 50, 400, 120, fill="lightgrey")
+        uml_text = canvas.create_text(325, 85, text=table_name, font=("Arial", 12, "bold"))
+        canvas.addtag_withtag("uml_block_" + table_name, uml_rect)
+        canvas.addtag_withtag("uml_block_" + table_name, uml_text)
+
     btn_rect = tk.Button(toolbar, text="Rectangle", command=add_rectangle)
     btn_rect.pack(side="left", padx=2, pady=2)
 
@@ -102,6 +147,7 @@ def main():
     canvas.config(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
 
     # --- Objets initiaux ---
+    file_label_id = canvas.create_text(10, 10, anchor="nw", text="Aucun fichier chargé", fill="black", font=("Arial", 10))
     blue_square = canvas.create_rectangle(50, 50, 150, 150, fill="blue")
 
     uml_rect = canvas.create_rectangle(250, 50, 400, 120, fill="lightgrey")
@@ -125,10 +171,20 @@ def main():
         if drag_data["item"]:
             dx = event.x - drag_data["x"]
             dy = event.y - drag_data["y"]
-            if "uml_block" in canvas.gettags(drag_data["item"]):
-                canvas.move("uml_block", dx, dy)
+            
+            # Identify the group tag if it exists
+            tags = canvas.gettags(drag_data["item"])
+            group_tag = None
+            for tag in tags:
+                if tag.startswith("uml_block"):
+                    group_tag = tag
+                    break
+            
+            if group_tag:
+                 canvas.move(group_tag, dx, dy)
             else:
                 canvas.move(drag_data["item"], dx, dy)
+            
             drag_data["x"], drag_data["y"] = event.x, event.y
 
     def on_release(event):

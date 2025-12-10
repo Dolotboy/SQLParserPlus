@@ -1,0 +1,209 @@
+{
+    "scriptText": "CREATE TABLE contract(id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  contract_number VARCHAR(25) NOT NULL, `state` ENUM('open','closed') NOT NULL, `role` ENUM('admin','member') NOT NULL,  user_id BIGINT NOT NULL, fees_amount DECIMAL(10,2) NOT NULL, taxes_amount DECIMAL(10,2) NOT NULL,  client_id BIGINT NOT NULL);\n\nALTER TABLE contract\nADD FOREIGN KEY (user_id) REFERENCES user(id), \nADD FOREIGN KEY (client_id) REFERENCES client(id);",
+    "queriesCreateTable": [
+        {
+            "queryText": "CREATE TABLE contract(id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  contract_number VARCHAR(25) NOT NULL, `state` ENUM('open','closed') NOT NULL, `role` ENUM('admin','member') NOT NULL,  user_id BIGINT NOT NULL, fees_amount DECIMAL(10,2) NOT NULL, taxes_amount DECIMAL(10,2) NOT NULL,  client_id BIGINT NOT NULL)",
+            "table": {
+                "name": "contract",
+                "columns": [
+                    {
+                        "name": "id",
+                        "dataType": "BIGINT",
+                        "attributes": [
+                            "NOT",
+                            "NULL",
+                            "PRIMARY",
+                            "KEY",
+                            "AUTO_INCREMENT"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "contract_number",
+                        "dataType": "VARCHAR(25)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`state`",
+                        "dataType": "ENUM('open','closed')",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`role`",
+                        "dataType": "ENUM('admin','member')",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "user_id",
+                        "dataType": "BIGINT",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": "user",
+                        "referenceColumn": "id"
+                    },
+                    {
+                        "name": "fees_amount",
+                        "dataType": "DECIMAL(10,2)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "taxes_amount",
+                        "dataType": "DECIMAL(10,2)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "client_id",
+                        "dataType": "BIGINT",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": "client",
+                        "referenceColumn": "id"
+                    }
+                ]
+            }
+        }
+    ],
+    "queriesCreateView": [],
+    "queriesAlterTable": [
+        {
+            "queryText": "ALTER TABLE contract\nADD FOREIGN KEY (user_id) REFERENCES user(id), \nADD FOREIGN KEY (client_id) REFERENCES client(id)",
+            "table": "contract",
+            "alterStatements": [
+                {
+                    "alterType": "ADD FOREIGN KEY",
+                    "alterText": "ADD FOREIGN KEY (user_id) REFERENCES user(id)",
+                    "concernedColumn": "user_id",
+                    "columnReferenceTable": "user",
+                    "columnReferenceColumn": "id"
+                },
+                {
+                    "alterType": "ADD FOREIGN KEY",
+                    "alterText": "ADD FOREIGN KEY (client_id) REFERENCES client(id)",
+                    "concernedColumn": "client_id",
+                    "columnReferenceTable": "client",
+                    "columnReferenceColumn": "id"
+                }
+            ]
+        }
+    ],
+    "tables": [
+        {
+            "name": "contract",
+            "columns": [
+                {
+                    "name": "id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL",
+                        "PRIMARY",
+                        "KEY",
+                        "AUTO_INCREMENT"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "contract_number",
+                    "dataType": "VARCHAR(25)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`state`",
+                    "dataType": "ENUM('open','closed')",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`role`",
+                    "dataType": "ENUM('admin','member')",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "user_id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": "user",
+                    "referenceColumn": "id"
+                },
+                {
+                    "name": "fees_amount",
+                    "dataType": "DECIMAL(10,2)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "taxes_amount",
+                    "dataType": "DECIMAL(10,2)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "client_id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": "client",
+                    "referenceColumn": "id"
+                }
+            ]
+        }
+    ]
+}
