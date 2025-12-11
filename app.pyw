@@ -85,7 +85,7 @@ def main():
 
     def save():
         nonlocal filename
-        if not filename.lower().endswith(".json") or not filename:
+        if not filename or not filename.lower().endswith(".json"):
             path = askdirectory(title="Choose output directory")
             if not path:
                 return
@@ -106,7 +106,6 @@ def main():
     menubar.add_cascade(label="File", menu=file_menu)
     file_menu.add_command(label="Open...", command=select_file)
     file_menu.add_command(label="Save", command=save)
-    file_menu.add_separator()
     file_menu.add_command(label="Exit", command=root.destroy)
 
     # --- Barre de boutons ---
@@ -184,12 +183,22 @@ def main():
     }
 
     def on_click(event):
-        items = canvas.find_closest(event.x, event.y)
+        # find_closest returns the closest item even if far away.
+        # Use find_overlapping to ensure we click ON the item.
+        # We MUST convert screen coordinates (event.x, y) to canvas coordinates
+        # to account for scrolling (and potential zoom offsets if they affect view).
+        cx = canvas.canvasx(event.x)
+        cy = canvas.canvasy(event.y)
+        
+        # Use a small tolerance (1px)
+        items = canvas.find_overlapping(cx-1, cy-1, cx+1, cy+1)
         if not items:
-            # Deselect if clicking empty space? Optional. 
-            # For now, let's just ignore or maybe maintain selection.
+            # If strict behavior: clear drag_data item.
+            drag_data["item"] = None
             return
-        item = items[0]
+            
+        # find_overlapping returns tuple. The last one is the top-most.
+        item = items[-1]
         drag_data["item"] = item
         drag_data["x"] = event.x
         drag_data["y"] = event.y
@@ -372,8 +381,10 @@ def main():
         entry.bind("<Escape>", cancel_edit)
 
     def on_double_click(event):
-        # Find item closest to click
-        items = canvas.find_closest(event.x, event.y)
+        # Find item closest to click, corrected for scroll/zoom
+        cx = canvas.canvasx(event.x)
+        cy = canvas.canvasy(event.y)
+        items = canvas.find_closest(cx, cy)
         if not items:
             return
         item = items[0]
