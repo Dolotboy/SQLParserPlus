@@ -204,6 +204,9 @@ class Script:
         scriptFile=open(scriptPath,"r")
         text = ""
         for line in scriptFile.readlines():
+            # Do not treat comments
+            if line.startswith("--"):
+                continue
             # ADD SPACE AT THE END OF LINE FINISHING WITH A ","
             line = line.replace(",", ", ")
             # LOCATE DECIMAL INDEX AND REMOVE SPACE IF EXIST
