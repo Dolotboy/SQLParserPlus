@@ -4,6 +4,7 @@ from tkinter import Menu
 from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter.filedialog import askdirectory
+import uuid
 import sqlParser as sqlp
 
 
@@ -45,9 +46,10 @@ def main():
 
     def load_uml():
         print("Loading UML")
+        # Use a copy or ensure we don't iterate indefinitely if we were modifying the list (which we won't now, but safer)
         for table in script.tables:
             print(f"Table : {table.name}")
-            add_table_block(table.name)
+            add_table_block(table.name, add_to_model=False)
 
     def select_file():
         nonlocal filename
@@ -119,14 +121,14 @@ def main():
     canvas = tk.Canvas(canvas_frame, bg="white", scrollregion=(0, 0, 2000, 2000))
     canvas.pack(fill="both", expand=True)
 
-    # --- Fonctions pour les boutons ---
-    def add_rectangle():
-        canvas.create_rectangle(100, 200, 200, 300, fill="red")
-
-    def add_circle():
-        canvas.create_oval(300, 200, 400, 300, fill="green")
-
-    def add_table_block(table_name: str):
+    def add_table_block(table_name: str = "Table_Name", add_to_model: bool = True):
+        nonlocal script
+        if script is None:
+            script = sqlp.Script()
+        
+        if add_to_model:
+            script.tables.append(sqlp.Table(table_name))
+        
         # Calculate text size for perfect centering and sizing
         # Create a temporary font object to measure
         # Note: In a real app we might cache this or instantiate once
@@ -152,14 +154,17 @@ def main():
         x2 = center_x + block_w / 2
         y2 = center_y + block_h / 2
         
-        uml_rect = canvas.create_rectangle(x1, y1, x2, y2, fill="lightgrey", tags="uml_block_" + table_name)
-        uml_text = canvas.create_text(center_x, center_y, text=table_name, font=("Arial", 12, "bold"), justify="center", anchor="center", tags="uml_block_" + table_name)
+        # Generate unique tag
+        tag_name = f"uml_block_{uuid.uuid4()}"
+
+        uml_rect = canvas.create_rectangle(x1, y1, x2, y2, fill="lightgrey", tags=tag_name)
+        uml_text = canvas.create_text(center_x, center_y, text=table_name, font=("Arial", 12, "bold"), justify="center", anchor="center", tags=tag_name)
         # Note: tags argument in create_* is more efficient than addtag_withtag immediately after
 
-    btn_rect = tk.Button(toolbar, text="Rectangle", command=add_rectangle)
+    btn_rect = tk.Button(toolbar, text="Add Table", command=add_table_block)
     btn_rect.pack(side="left", padx=2, pady=2)
 
-    btn_circle = tk.Button(toolbar, text="Cercle", command=add_circle)
+    btn_circle = tk.Button(toolbar, text="Add Table", command=add_table_block)
     btn_circle.pack(side="left", padx=2, pady=2)
 
     # --- Scrollbars ---
@@ -367,7 +372,73 @@ def main():
 
         def save_edit(event=None):
             new_text = entry.get()
+            if not new_text: 
+                return # Don't allow empty names?
+            
+            # 1. Update Script Model
+            # Find the table with the old name. 
+            # Note: ambiguous if multiple tables have same name, but we pick the first match.
+            found_table = None
+            for t in script.tables:
+                 if t.name == current_text:
+                     t.name = new_text
+                     found_table = t
+                     break
+            
+            if not found_table:
+                print(f"Warning: Could not find table with name '{current_text}' in script.")
+
+            # 2. Update Visuals (Text)
             canvas.itemconfig(item, text=new_text)
+            
+            # 3. Update Tags
+            # No need to update tags anymore as we use stable UUIDs!
+            # 3. Retrieve Group Tag (UUID-based, so it doesn't change)
+            tags = canvas.gettags(item)
+            group_tag = None
+            for tag in tags:
+                if tag.startswith("uml_block"):
+                    group_tag = tag
+                    break
+            
+            new_group_tag = group_tag
+            
+            
+            # 4. Resize Block to fit new text
+            # Re-calculate size logic from add_table_block
+            from tkinter import font as tkfont
+            f = tkfont.Font(family="Arial", size=12, weight="bold")
+            text_w = f.measure(new_text)
+            text_h = f.metrics("linespace")
+            
+            padding_x = 20
+            padding_y = 10
+            min_w = 150
+            min_h = 70
+            
+            block_w = max(min_w, text_w + padding_x * 2)
+            block_h = max(min_h, text_h + padding_y * 2)
+            
+            # We need the current center to resize around it
+            # We can get it from the underlying rectangle coords or the text coords
+            text_coords = canvas.coords(item)
+            center_x, center_y = text_coords[0], text_coords[1]
+            
+            x1 = center_x - block_w / 2
+            y1 = center_y - block_h / 2
+            x2 = center_x + block_w / 2
+            y2 = center_y + block_h / 2
+            
+            # Update rectangle coords
+            # Need to find the rectangle item in the group (now having new_group_tag)
+            # We already have 'group_items' from before tag switch, or use new tag
+            items_to_resize = canvas.find_withtag(new_group_tag)
+            for i in items_to_resize:
+                if canvas.type(i) == 'rectangle':
+                    canvas.coords(i, x1, y1, x2, y2)
+                    break
+            
+            
             canvas.delete(window_id)
             # Refocus canvas to ensure keys work
             canvas.focus_set()

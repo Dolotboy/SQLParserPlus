@@ -192,13 +192,19 @@ class QueryAlterTable:
         return f"Query: {self.queryText}"
 
 class Script:
-    def __init__(self, scriptPath):
-        self.scriptText = self.format(scriptPath)
-        self.queriesCreateTable = self.extract_queries_create_table()
-        self.queriesCreateView = self.extract_queries_create_view()
-        self.queriesAlterTable = self.extract_queries_alter_table()
+    def __init__(self, scriptPath=None):
         self.tables = []
-        self.extract_queries_data()
+        if scriptPath:
+            self.scriptText = self.format(scriptPath)
+            self.queriesCreateTable = self.extract_queries_create_table()
+            self.queriesCreateView = self.extract_queries_create_view()
+            self.queriesAlterTable = self.extract_queries_alter_table()
+            self.extract_queries_data()
+        else:
+            self.scriptText = ""
+            self.queriesCreateTable = []
+            self.queriesCreateView = []
+            self.queriesAlterTable = []
     
     def format(self, scriptPath):
         scriptFile=open(scriptPath,"r")

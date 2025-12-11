@@ -1,47 +1,1721 @@
 {
-    "scriptText": "CREATE TABLE contract(id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  contract_number VARCHAR(25) NOT NULL, `state` ENUM('open','closed') NOT NULL, `role` ENUM('admin','member') NOT NULL,  user_id BIGINT NOT NULL, fees_amount DECIMAL(10,2) NOT NULL, taxes_amount DECIMAL(10,2) NOT NULL,  client_id BIGINT NOT NULL);\n\nALTER TABLE contract\nADD FOREIGN KEY (user_id) REFERENCES user(id), \nADD FOREIGN KEY (client_id) REFERENCES client(id);",
+    "tables": [
+        {
+            "name": "`cache`",
+            "columns": [
+                {
+                    "name": "`key`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`value`",
+                    "dataType": "mediumtext",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`expiration`",
+                    "dataType": "int(11)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "`cache_locks`",
+            "columns": [
+                {
+                    "name": "`key`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`owner`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`expiration`",
+                    "dataType": "int(11)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "`failed_jobs`",
+            "columns": [
+                {
+                    "name": "`id`",
+                    "dataType": "bigint(20)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`uuid`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`connection`",
+                    "dataType": "text",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`queue`",
+                    "dataType": "text",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`payload`",
+                    "dataType": "longtext",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`exception`",
+                    "dataType": "longtext",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`failed_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "`jobs`",
+            "columns": [
+                {
+                    "name": "`id`",
+                    "dataType": "bigint(20)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`queue`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`payload`",
+                    "dataType": "longtext",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`attempts`",
+                    "dataType": "tinyint(3)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`reserved_at`",
+                    "dataType": "int(10)",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`available_at`",
+                    "dataType": "int(10)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`created_at`",
+                    "dataType": "int(10)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "`job_batches`",
+            "columns": [
+                {
+                    "name": "`id`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`name`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`total_jobs`",
+                    "dataType": "int(11)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`pending_jobs`",
+                    "dataType": "int(11)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`failed_jobs`",
+                    "dataType": "int(11)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`failed_job_ids`",
+                    "dataType": "longtext",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`options`",
+                    "dataType": "mediumtext",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`cancelled_at`",
+                    "dataType": "int(11)",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`created_at`",
+                    "dataType": "int(11)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`finished_at`",
+                    "dataType": "int(11)",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "`migrations`",
+            "columns": [
+                {
+                    "name": "`id`",
+                    "dataType": "int(10)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`migration`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`batch`",
+                    "dataType": "int(11)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "`model_has_permissions`",
+            "columns": [
+                {
+                    "name": "`permission_id`",
+                    "dataType": "bigint(20)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`model_type`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`model_id`",
+                    "dataType": "bigint(20)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "`model_has_roles`",
+            "columns": [
+                {
+                    "name": "`role_id`",
+                    "dataType": "bigint(20)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`model_type`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`model_id`",
+                    "dataType": "bigint(20)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "`password_reset_tokens`",
+            "columns": [
+                {
+                    "name": "`email`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`token`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`created_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "`permissions`",
+            "columns": [
+                {
+                    "name": "`id`",
+                    "dataType": "bigint(20)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`name`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`guard_name`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`created_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`updated_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "`personal_access_tokens`",
+            "columns": [
+                {
+                    "name": "`id`",
+                    "dataType": "bigint(20)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`tokenable_type`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`tokenable_id`",
+                    "dataType": "bigint(20)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`name`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`token`",
+                    "dataType": "varchar(64)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`abilities`",
+                    "dataType": "text",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`last_used_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`expires_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`created_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`updated_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "`plesk_webspaces`",
+            "columns": [
+                {
+                    "name": "`id`",
+                    "dataType": "bigint(20)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`plesk_id`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`guid`",
+                    "dataType": "char(36)",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`domain`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`server`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`ips`",
+                    "dataType": "longtext",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`subdomains`",
+                    "dataType": "longtext",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`aliases`",
+                    "dataType": "longtext",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`maintenance_enabled`",
+                    "dataType": "tinyint(1)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`month_maintenance_interval`",
+                    "dataType": "int(11)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`account_id`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`created_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`updated_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`deleted_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`status`",
+                    "dataType": "enum('ToContact'",
+                    "attributes": [],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "'Completed')",
+                    "dataType": "DEFAULT",
+                    "attributes": [],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "`plesk_webspace_maintenances`",
+            "columns": [
+                {
+                    "name": "`id`",
+                    "dataType": "bigint(20)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`plesk_webspace_id`",
+                    "dataType": "bigint(20)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`performed_at`",
+                    "dataType": "datetime",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`notes`",
+                    "dataType": "text",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`created_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`updated_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`created_by`",
+                    "dataType": "bigint(20)",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`performed_by`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`project_reference`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`project_item`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "`projects`",
+            "columns": [
+                {
+                    "name": "`id`",
+                    "dataType": "bigint(20)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`code`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`name`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`crm_name`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`stage`",
+                    "dataType": "int(11)",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`project_type_id`",
+                    "dataType": "bigint(20)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`active`",
+                    "dataType": "tinyint(1)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`created_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`updated_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "`project_types`",
+            "columns": [
+                {
+                    "name": "`id`",
+                    "dataType": "bigint(20)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`name`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`created_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`updated_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "`teams`",
+            "columns": [
+                {
+                    "name": "`id`",
+                    "dataType": "bigint(20)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`name`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`created_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`updated_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "`team_members`",
+            "columns": [
+                {
+                    "name": "`id`",
+                    "dataType": "bigint(20)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`team_id`",
+                    "dataType": "bigint(20)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`user_id`",
+                    "dataType": "bigint(20)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`created_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`updated_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "`users`",
+            "columns": [
+                {
+                    "name": "`id`",
+                    "dataType": "bigint(20)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`crm_employee_id`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`first_name`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`last_name`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`email`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`email_verified_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`password`",
+                    "dataType": "varchar(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`remember_token`",
+                    "dataType": "varchar(100)",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`created_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "`updated_at`",
+                    "dataType": "timestamp",
+                    "attributes": [
+                        "NULL",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "Table_NameTest",
+            "columns": []
+        }
+    ],
+    "scriptText": "CREATE TABLE `cache` (\n  `key` varchar(255) NOT NULL, \n  `value` mediumtext NOT NULL, \n  `expiration` int(11) NOT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n\n\nCREATE TABLE `cache_locks` (\n  `key` varchar(255) NOT NULL, \n  `owner` varchar(255) NOT NULL, \n  `expiration` int(11) NOT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n\n\nCREATE TABLE `failed_jobs` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `uuid` varchar(255) NOT NULL, \n  `connection` text NOT NULL, \n  `queue` text NOT NULL, \n  `payload` longtext NOT NULL, \n  `exception` longtext NOT NULL, \n  `failed_at` timestamp NOT NULL DEFAULT current_timestamp()\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n\n\nCREATE TABLE `jobs` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `queue` varchar(255) NOT NULL, \n  `payload` longtext NOT NULL, \n  `attempts` tinyint(3) UNSIGNED NOT NULL, \n  `reserved_at` int(10) UNSIGNED DEFAULT NULL, \n  `available_at` int(10) UNSIGNED NOT NULL, \n  `created_at` int(10) UNSIGNED NOT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n\n\nCREATE TABLE `job_batches` (\n  `id` varchar(255) NOT NULL, \n  `name` varchar(255) NOT NULL, \n  `total_jobs` int(11) NOT NULL, \n  `pending_jobs` int(11) NOT NULL, \n  `failed_jobs` int(11) NOT NULL, \n  `failed_job_ids` longtext NOT NULL, \n  `options` mediumtext DEFAULT NULL, \n  `cancelled_at` int(11) DEFAULT NULL, \n  `created_at` int(11) NOT NULL, \n  `finished_at` int(11) DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n\n\nCREATE TABLE `migrations` (\n  `id` int(10) UNSIGNED NOT NULL, \n  `migration` varchar(255) NOT NULL, \n  `batch` int(11) NOT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n\n\nCREATE TABLE `model_has_permissions` (\n  `permission_id` bigint(20) UNSIGNED NOT NULL, \n  `model_type` varchar(255) NOT NULL, \n  `model_id` bigint(20) UNSIGNED NOT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n\n\nCREATE TABLE `model_has_roles` (\n  `role_id` bigint(20) UNSIGNED NOT NULL, \n  `model_type` varchar(255) NOT NULL, \n  `model_id` bigint(20) UNSIGNED NOT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n\n\nCREATE TABLE `password_reset_tokens` (\n  `email` varchar(255) NOT NULL, \n  `token` varchar(255) NOT NULL, \n  `created_at` timestamp NULL DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n\n\nCREATE TABLE `permissions` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `name` varchar(255) NOT NULL, \n  `guard_name` varchar(255) NOT NULL, \n  `created_at` timestamp NULL DEFAULT NULL, \n  `updated_at` timestamp NULL DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n\n\nCREATE TABLE `personal_access_tokens` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `tokenable_type` varchar(255) NOT NULL, \n  `tokenable_id` bigint(20) UNSIGNED NOT NULL, \n  `name` varchar(255) NOT NULL, \n  `token` varchar(64) NOT NULL, \n  `abilities` text DEFAULT NULL, \n  `last_used_at` timestamp NULL DEFAULT NULL, \n  `expires_at` timestamp NULL DEFAULT NULL, \n  `created_at` timestamp NULL DEFAULT NULL, \n  `updated_at` timestamp NULL DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n\n\nCREATE TABLE `plesk_webspaces` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `plesk_id` varchar(255) DEFAULT NULL, \n  `guid` char(36) DEFAULT NULL, \n  `domain` varchar(255) NOT NULL, \n  `server` varchar(255) DEFAULT NULL, \n  `ips` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`ips`)), \n  `subdomains` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`subdomains`)), \n  `aliases` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`aliases`)), \n  `maintenance_enabled` tinyint(1) NOT NULL DEFAULT 0, \n  `month_maintenance_interval` int(11) NOT NULL DEFAULT 6, \n  `account_id` varchar(255) DEFAULT NULL, \n  `created_at` timestamp NULL DEFAULT NULL, \n  `updated_at` timestamp NULL DEFAULT NULL, \n  `deleted_at` timestamp NULL DEFAULT NULL, \n  `status` enum('ToContact', 'Contacted', 'InProgress', 'Completed') DEFAULT 'ToContact'\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n\n\nCREATE TABLE `plesk_webspace_maintenances` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `plesk_webspace_id` bigint(20) UNSIGNED NOT NULL, \n  `performed_at` datetime DEFAULT NULL, \n  `notes` text DEFAULT NULL, \n  `created_at` timestamp NULL DEFAULT NULL, \n  `updated_at` timestamp NULL DEFAULT NULL, \n  `created_by` bigint(20) UNSIGNED DEFAULT NULL, \n  `performed_by` varchar(255) DEFAULT NULL, \n  `project_reference` varchar(255) DEFAULT NULL, \n  `project_item` varchar(255) DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n\n\nCREATE TABLE `projects` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `code` varchar(255) NOT NULL, \n  `name` varchar(255) NOT NULL, \n  `crm_name` varchar(255) NOT NULL, \n  `stage` int(11) DEFAULT NULL, \n  `project_type_id` bigint(20) UNSIGNED NOT NULL, \n  `active` tinyint(1) NOT NULL, \n  `created_at` timestamp NULL DEFAULT NULL, \n  `updated_at` timestamp NULL DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n\nCREATE TABLE `project_types` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `name` varchar(255) NOT NULL, \n  `created_at` timestamp NULL DEFAULT NULL, \n  `updated_at` timestamp NULL DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n\nCREATE TABLE `teams` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `name` varchar(255) NOT NULL, \n  `created_at` timestamp NULL DEFAULT NULL, \n  `updated_at` timestamp NULL DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n\n\nCREATE TABLE `team_members` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `team_id` bigint(20) UNSIGNED NOT NULL, \n  `user_id` bigint(20) UNSIGNED NOT NULL, \n  `created_at` timestamp NULL DEFAULT NULL, \n  `updated_at` timestamp NULL DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n\n\nCREATE TABLE `users` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `crm_employee_id` varchar(255) DEFAULT NULL, \n  `first_name` varchar(255) NOT NULL, \n  `last_name` varchar(255) NOT NULL, \n  `email` varchar(255) NOT NULL, \n  `email_verified_at` timestamp NULL DEFAULT NULL, \n  `password` varchar(255) NOT NULL, \n  `remember_token` varchar(100) DEFAULT NULL, \n  `created_at` timestamp NULL DEFAULT NULL, \n  `updated_at` timestamp NULL DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
     "queriesCreateTable": [
         {
-            "queryText": "CREATE TABLE contract(id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  contract_number VARCHAR(25) NOT NULL, `state` ENUM('open','closed') NOT NULL, `role` ENUM('admin','member') NOT NULL,  user_id BIGINT NOT NULL, fees_amount DECIMAL(10,2) NOT NULL, taxes_amount DECIMAL(10,2) NOT NULL,  client_id BIGINT NOT NULL)",
+            "queryText": "CREATE TABLE `cache` (\n  `key` varchar(255) NOT NULL, \n  `value` mediumtext NOT NULL, \n  `expiration` int(11) NOT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
             "table": {
-                "name": "contract",
+                "name": "`cache`",
                 "columns": [
                     {
-                        "name": "id",
-                        "dataType": "BIGINT",
+                        "name": "`key`",
+                        "dataType": "varchar(255)",
                         "attributes": [
                             "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`value`",
+                        "dataType": "mediumtext",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`expiration`",
+                        "dataType": "int(11)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    }
+                ]
+            }
+        },
+        {
+            "queryText": "CREATE TABLE `cache_locks` (\n  `key` varchar(255) NOT NULL, \n  `owner` varchar(255) NOT NULL, \n  `expiration` int(11) NOT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+            "table": {
+                "name": "`cache_locks`",
+                "columns": [
+                    {
+                        "name": "`key`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`owner`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`expiration`",
+                        "dataType": "int(11)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    }
+                ]
+            }
+        },
+        {
+            "queryText": "CREATE TABLE `failed_jobs` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `uuid` varchar(255) NOT NULL, \n  `connection` text NOT NULL, \n  `queue` text NOT NULL, \n  `payload` longtext NOT NULL, \n  `exception` longtext NOT NULL, \n  `failed_at` timestamp NOT NULL DEFAULT current_timestamp()\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+            "table": {
+                "name": "`failed_jobs`",
+                "columns": [
+                    {
+                        "name": "`id`",
+                        "dataType": "bigint(20)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`uuid`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`connection`",
+                        "dataType": "text",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`queue`",
+                        "dataType": "text",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`payload`",
+                        "dataType": "longtext",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`exception`",
+                        "dataType": "longtext",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`failed_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    }
+                ]
+            }
+        },
+        {
+            "queryText": "CREATE TABLE `jobs` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `queue` varchar(255) NOT NULL, \n  `payload` longtext NOT NULL, \n  `attempts` tinyint(3) UNSIGNED NOT NULL, \n  `reserved_at` int(10) UNSIGNED DEFAULT NULL, \n  `available_at` int(10) UNSIGNED NOT NULL, \n  `created_at` int(10) UNSIGNED NOT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+            "table": {
+                "name": "`jobs`",
+                "columns": [
+                    {
+                        "name": "`id`",
+                        "dataType": "bigint(20)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`queue`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`payload`",
+                        "dataType": "longtext",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`attempts`",
+                        "dataType": "tinyint(3)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`reserved_at`",
+                        "dataType": "int(10)",
+                        "attributes": [
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`available_at`",
+                        "dataType": "int(10)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`created_at`",
+                        "dataType": "int(10)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    }
+                ]
+            }
+        },
+        {
+            "queryText": "CREATE TABLE `job_batches` (\n  `id` varchar(255) NOT NULL, \n  `name` varchar(255) NOT NULL, \n  `total_jobs` int(11) NOT NULL, \n  `pending_jobs` int(11) NOT NULL, \n  `failed_jobs` int(11) NOT NULL, \n  `failed_job_ids` longtext NOT NULL, \n  `options` mediumtext DEFAULT NULL, \n  `cancelled_at` int(11) DEFAULT NULL, \n  `created_at` int(11) NOT NULL, \n  `finished_at` int(11) DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+            "table": {
+                "name": "`job_batches`",
+                "columns": [
+                    {
+                        "name": "`id`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`name`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`total_jobs`",
+                        "dataType": "int(11)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`pending_jobs`",
+                        "dataType": "int(11)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`failed_jobs`",
+                        "dataType": "int(11)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`failed_job_ids`",
+                        "dataType": "longtext",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`options`",
+                        "dataType": "mediumtext",
+                        "attributes": [
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`cancelled_at`",
+                        "dataType": "int(11)",
+                        "attributes": [
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`created_at`",
+                        "dataType": "int(11)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`finished_at`",
+                        "dataType": "int(11)",
+                        "attributes": [
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    }
+                ]
+            }
+        },
+        {
+            "queryText": "CREATE TABLE `migrations` (\n  `id` int(10) UNSIGNED NOT NULL, \n  `migration` varchar(255) NOT NULL, \n  `batch` int(11) NOT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+            "table": {
+                "name": "`migrations`",
+                "columns": [
+                    {
+                        "name": "`id`",
+                        "dataType": "int(10)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`migration`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`batch`",
+                        "dataType": "int(11)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    }
+                ]
+            }
+        },
+        {
+            "queryText": "CREATE TABLE `model_has_permissions` (\n  `permission_id` bigint(20) UNSIGNED NOT NULL, \n  `model_type` varchar(255) NOT NULL, \n  `model_id` bigint(20) UNSIGNED NOT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+            "table": {
+                "name": "`model_has_permissions`",
+                "columns": [
+                    {
+                        "name": "`permission_id`",
+                        "dataType": "bigint(20)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`model_type`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`model_id`",
+                        "dataType": "bigint(20)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    }
+                ]
+            }
+        },
+        {
+            "queryText": "CREATE TABLE `model_has_roles` (\n  `role_id` bigint(20) UNSIGNED NOT NULL, \n  `model_type` varchar(255) NOT NULL, \n  `model_id` bigint(20) UNSIGNED NOT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+            "table": {
+                "name": "`model_has_roles`",
+                "columns": [
+                    {
+                        "name": "`role_id`",
+                        "dataType": "bigint(20)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`model_type`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`model_id`",
+                        "dataType": "bigint(20)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    }
+                ]
+            }
+        },
+        {
+            "queryText": "CREATE TABLE `password_reset_tokens` (\n  `email` varchar(255) NOT NULL, \n  `token` varchar(255) NOT NULL, \n  `created_at` timestamp NULL DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+            "table": {
+                "name": "`password_reset_tokens`",
+                "columns": [
+                    {
+                        "name": "`email`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`token`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`created_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
                             "NULL",
-                            "PRIMARY",
-                            "KEY",
-                            "AUTO_INCREMENT"
-                        ],
-                        "referenceTable": null,
-                        "referenceColumn": null
-                    },
-                    {
-                        "name": "contract_number",
-                        "dataType": "VARCHAR(25)",
-                        "attributes": [
-                            "NOT",
                             "NULL"
                         ],
                         "referenceTable": null,
                         "referenceColumn": null
-                    },
+                    }
+                ]
+            }
+        },
+        {
+            "queryText": "CREATE TABLE `permissions` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `name` varchar(255) NOT NULL, \n  `guard_name` varchar(255) NOT NULL, \n  `created_at` timestamp NULL DEFAULT NULL, \n  `updated_at` timestamp NULL DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+            "table": {
+                "name": "`permissions`",
+                "columns": [
                     {
-                        "name": "`state`",
-                        "dataType": "ENUM('open','closed')",
-                        "attributes": [
-                            "NOT",
-                            "NULL"
-                        ],
-                        "referenceTable": null,
-                        "referenceColumn": null
-                    },
-                    {
-                        "name": "`role`",
-                        "dataType": "ENUM('admin','member')",
+                        "name": "`id`",
+                        "dataType": "bigint(20)",
                         "attributes": [
                             "NOT",
                             "NULL"
@@ -50,18 +1724,8 @@
                         "referenceColumn": null
                     },
                     {
-                        "name": "user_id",
-                        "dataType": "BIGINT",
-                        "attributes": [
-                            "NOT",
-                            "NULL"
-                        ],
-                        "referenceTable": "user",
-                        "referenceColumn": "id"
-                    },
-                    {
-                        "name": "fees_amount",
-                        "dataType": "DECIMAL(10,2)",
+                        "name": "`name`",
+                        "dataType": "varchar(255)",
                         "attributes": [
                             "NOT",
                             "NULL"
@@ -70,8 +1734,8 @@
                         "referenceColumn": null
                     },
                     {
-                        "name": "taxes_amount",
-                        "dataType": "DECIMAL(10,2)",
+                        "name": "`guard_name`",
+                        "dataType": "varchar(255)",
                         "attributes": [
                             "NOT",
                             "NULL"
@@ -80,130 +1744,750 @@
                         "referenceColumn": null
                     },
                     {
-                        "name": "client_id",
-                        "dataType": "BIGINT",
+                        "name": "`created_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`updated_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    }
+                ]
+            }
+        },
+        {
+            "queryText": "CREATE TABLE `personal_access_tokens` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `tokenable_type` varchar(255) NOT NULL, \n  `tokenable_id` bigint(20) UNSIGNED NOT NULL, \n  `name` varchar(255) NOT NULL, \n  `token` varchar(64) NOT NULL, \n  `abilities` text DEFAULT NULL, \n  `last_used_at` timestamp NULL DEFAULT NULL, \n  `expires_at` timestamp NULL DEFAULT NULL, \n  `created_at` timestamp NULL DEFAULT NULL, \n  `updated_at` timestamp NULL DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+            "table": {
+                "name": "`personal_access_tokens`",
+                "columns": [
+                    {
+                        "name": "`id`",
+                        "dataType": "bigint(20)",
                         "attributes": [
                             "NOT",
                             "NULL"
                         ],
-                        "referenceTable": "client",
-                        "referenceColumn": "id"
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`tokenable_type`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`tokenable_id`",
+                        "dataType": "bigint(20)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`name`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`token`",
+                        "dataType": "varchar(64)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`abilities`",
+                        "dataType": "text",
+                        "attributes": [
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`last_used_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`expires_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`created_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`updated_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    }
+                ]
+            }
+        },
+        {
+            "queryText": "CREATE TABLE `plesk_webspaces` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `plesk_id` varchar(255) DEFAULT NULL, \n  `guid` char(36) DEFAULT NULL, \n  `domain` varchar(255) NOT NULL, \n  `server` varchar(255) DEFAULT NULL, \n  `ips` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`ips`)), \n  `subdomains` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`subdomains`)), \n  `aliases` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`aliases`)), \n  `maintenance_enabled` tinyint(1) NOT NULL DEFAULT 0, \n  `month_maintenance_interval` int(11) NOT NULL DEFAULT 6, \n  `account_id` varchar(255) DEFAULT NULL, \n  `created_at` timestamp NULL DEFAULT NULL, \n  `updated_at` timestamp NULL DEFAULT NULL, \n  `deleted_at` timestamp NULL DEFAULT NULL, \n  `status` enum('ToContact', 'Contacted', 'InProgress', 'Completed') DEFAULT 'ToContact'\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+            "table": {
+                "name": "`plesk_webspaces`",
+                "columns": [
+                    {
+                        "name": "`id`",
+                        "dataType": "bigint(20)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`plesk_id`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`guid`",
+                        "dataType": "char(36)",
+                        "attributes": [
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`domain`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`server`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`ips`",
+                        "dataType": "longtext",
+                        "attributes": [
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`subdomains`",
+                        "dataType": "longtext",
+                        "attributes": [
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`aliases`",
+                        "dataType": "longtext",
+                        "attributes": [
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`maintenance_enabled`",
+                        "dataType": "tinyint(1)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`month_maintenance_interval`",
+                        "dataType": "int(11)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`account_id`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`created_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`updated_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`deleted_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`status`",
+                        "dataType": "enum('ToContact'",
+                        "attributes": [],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "'Completed')",
+                        "dataType": "DEFAULT",
+                        "attributes": [],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    }
+                ]
+            }
+        },
+        {
+            "queryText": "CREATE TABLE `plesk_webspace_maintenances` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `plesk_webspace_id` bigint(20) UNSIGNED NOT NULL, \n  `performed_at` datetime DEFAULT NULL, \n  `notes` text DEFAULT NULL, \n  `created_at` timestamp NULL DEFAULT NULL, \n  `updated_at` timestamp NULL DEFAULT NULL, \n  `created_by` bigint(20) UNSIGNED DEFAULT NULL, \n  `performed_by` varchar(255) DEFAULT NULL, \n  `project_reference` varchar(255) DEFAULT NULL, \n  `project_item` varchar(255) DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+            "table": {
+                "name": "`plesk_webspace_maintenances`",
+                "columns": [
+                    {
+                        "name": "`id`",
+                        "dataType": "bigint(20)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`plesk_webspace_id`",
+                        "dataType": "bigint(20)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`performed_at`",
+                        "dataType": "datetime",
+                        "attributes": [
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`notes`",
+                        "dataType": "text",
+                        "attributes": [
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`created_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`updated_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`created_by`",
+                        "dataType": "bigint(20)",
+                        "attributes": [
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`performed_by`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`project_reference`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`project_item`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    }
+                ]
+            }
+        },
+        {
+            "queryText": "CREATE TABLE `projects` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `code` varchar(255) NOT NULL, \n  `name` varchar(255) NOT NULL, \n  `crm_name` varchar(255) NOT NULL, \n  `stage` int(11) DEFAULT NULL, \n  `project_type_id` bigint(20) UNSIGNED NOT NULL, \n  `active` tinyint(1) NOT NULL, \n  `created_at` timestamp NULL DEFAULT NULL, \n  `updated_at` timestamp NULL DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+            "table": {
+                "name": "`projects`",
+                "columns": [
+                    {
+                        "name": "`id`",
+                        "dataType": "bigint(20)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`code`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`name`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`crm_name`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`stage`",
+                        "dataType": "int(11)",
+                        "attributes": [
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`project_type_id`",
+                        "dataType": "bigint(20)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`active`",
+                        "dataType": "tinyint(1)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`created_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`updated_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    }
+                ]
+            }
+        },
+        {
+            "queryText": "CREATE TABLE `project_types` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `name` varchar(255) NOT NULL, \n  `created_at` timestamp NULL DEFAULT NULL, \n  `updated_at` timestamp NULL DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+            "table": {
+                "name": "`project_types`",
+                "columns": [
+                    {
+                        "name": "`id`",
+                        "dataType": "bigint(20)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`name`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`created_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`updated_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    }
+                ]
+            }
+        },
+        {
+            "queryText": "CREATE TABLE `teams` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `name` varchar(255) NOT NULL, \n  `created_at` timestamp NULL DEFAULT NULL, \n  `updated_at` timestamp NULL DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+            "table": {
+                "name": "`teams`",
+                "columns": [
+                    {
+                        "name": "`id`",
+                        "dataType": "bigint(20)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`name`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`created_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`updated_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    }
+                ]
+            }
+        },
+        {
+            "queryText": "CREATE TABLE `team_members` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `team_id` bigint(20) UNSIGNED NOT NULL, \n  `user_id` bigint(20) UNSIGNED NOT NULL, \n  `created_at` timestamp NULL DEFAULT NULL, \n  `updated_at` timestamp NULL DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+            "table": {
+                "name": "`team_members`",
+                "columns": [
+                    {
+                        "name": "`id`",
+                        "dataType": "bigint(20)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`team_id`",
+                        "dataType": "bigint(20)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`user_id`",
+                        "dataType": "bigint(20)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`created_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`updated_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    }
+                ]
+            }
+        },
+        {
+            "queryText": "CREATE TABLE `users` (\n  `id` bigint(20) UNSIGNED NOT NULL, \n  `crm_employee_id` varchar(255) DEFAULT NULL, \n  `first_name` varchar(255) NOT NULL, \n  `last_name` varchar(255) NOT NULL, \n  `email` varchar(255) NOT NULL, \n  `email_verified_at` timestamp NULL DEFAULT NULL, \n  `password` varchar(255) NOT NULL, \n  `remember_token` varchar(100) DEFAULT NULL, \n  `created_at` timestamp NULL DEFAULT NULL, \n  `updated_at` timestamp NULL DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+            "table": {
+                "name": "`users`",
+                "columns": [
+                    {
+                        "name": "`id`",
+                        "dataType": "bigint(20)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`crm_employee_id`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`first_name`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`last_name`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`email`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`email_verified_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`password`",
+                        "dataType": "varchar(255)",
+                        "attributes": [
+                            "NOT",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`remember_token`",
+                        "dataType": "varchar(100)",
+                        "attributes": [
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`created_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
+                    },
+                    {
+                        "name": "`updated_at`",
+                        "dataType": "timestamp",
+                        "attributes": [
+                            "NULL",
+                            "NULL"
+                        ],
+                        "referenceTable": null,
+                        "referenceColumn": null
                     }
                 ]
             }
         }
     ],
     "queriesCreateView": [],
-    "queriesAlterTable": [
-        {
-            "queryText": "ALTER TABLE contract\nADD FOREIGN KEY (user_id) REFERENCES user(id), \nADD FOREIGN KEY (client_id) REFERENCES client(id)",
-            "table": "contract",
-            "alterStatements": [
-                {
-                    "alterType": "ADD FOREIGN KEY",
-                    "alterText": "ADD FOREIGN KEY (user_id) REFERENCES user(id)",
-                    "concernedColumn": "user_id",
-                    "columnReferenceTable": "user",
-                    "columnReferenceColumn": "id"
-                },
-                {
-                    "alterType": "ADD FOREIGN KEY",
-                    "alterText": "ADD FOREIGN KEY (client_id) REFERENCES client(id)",
-                    "concernedColumn": "client_id",
-                    "columnReferenceTable": "client",
-                    "columnReferenceColumn": "id"
-                }
-            ]
-        }
-    ],
-    "tables": [
-        {
-            "name": "contract",
-            "columns": [
-                {
-                    "name": "id",
-                    "dataType": "BIGINT",
-                    "attributes": [
-                        "NOT",
-                        "NULL",
-                        "PRIMARY",
-                        "KEY",
-                        "AUTO_INCREMENT"
-                    ],
-                    "referenceTable": null,
-                    "referenceColumn": null
-                },
-                {
-                    "name": "contract_number",
-                    "dataType": "VARCHAR(25)",
-                    "attributes": [
-                        "NOT",
-                        "NULL"
-                    ],
-                    "referenceTable": null,
-                    "referenceColumn": null
-                },
-                {
-                    "name": "`state`",
-                    "dataType": "ENUM('open','closed')",
-                    "attributes": [
-                        "NOT",
-                        "NULL"
-                    ],
-                    "referenceTable": null,
-                    "referenceColumn": null
-                },
-                {
-                    "name": "`role`",
-                    "dataType": "ENUM('admin','member')",
-                    "attributes": [
-                        "NOT",
-                        "NULL"
-                    ],
-                    "referenceTable": null,
-                    "referenceColumn": null
-                },
-                {
-                    "name": "user_id",
-                    "dataType": "BIGINT",
-                    "attributes": [
-                        "NOT",
-                        "NULL"
-                    ],
-                    "referenceTable": "user",
-                    "referenceColumn": "id"
-                },
-                {
-                    "name": "fees_amount",
-                    "dataType": "DECIMAL(10,2)",
-                    "attributes": [
-                        "NOT",
-                        "NULL"
-                    ],
-                    "referenceTable": null,
-                    "referenceColumn": null
-                },
-                {
-                    "name": "taxes_amount",
-                    "dataType": "DECIMAL(10,2)",
-                    "attributes": [
-                        "NOT",
-                        "NULL"
-                    ],
-                    "referenceTable": null,
-                    "referenceColumn": null
-                },
-                {
-                    "name": "client_id",
-                    "dataType": "BIGINT",
-                    "attributes": [
-                        "NOT",
-                        "NULL"
-                    ],
-                    "referenceTable": "client",
-                    "referenceColumn": "id"
-                }
-            ]
-        }
-    ]
+    "queriesAlterTable": []
 }
