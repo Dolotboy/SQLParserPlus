@@ -128,10 +128,34 @@ def main():
         canvas.create_oval(300, 200, 400, 300, fill="green")
 
     def add_table_block(table_name: str):
-        uml_rect = canvas.create_rectangle(250, 50, 400, 120, fill="lightgrey")
-        uml_text = canvas.create_text(325, 85, text=table_name, font=("Arial", 12, "bold"))
-        canvas.addtag_withtag("uml_block_" + table_name, uml_rect)
-        canvas.addtag_withtag("uml_block_" + table_name, uml_text)
+        # Calculate text size for perfect centering and sizing
+        # Create a temporary font object to measure
+        # Note: In a real app we might cache this or instantiate once
+        from tkinter import font as tkfont
+        f = tkfont.Font(family="Arial", size=12, weight="bold")
+        text_w = f.measure(table_name)
+        text_h = f.metrics("linespace")
+        
+        padding_x = 20
+        padding_y = 10
+        min_w = 150
+        min_h = 70
+        
+        block_w = max(min_w, text_w + padding_x * 2)
+        block_h = max(min_h, text_h + padding_y * 2)
+        
+        # Center position (fixed for now as in original)
+        center_x = 325
+        center_y = 85
+        
+        x1 = center_x - block_w / 2
+        y1 = center_y - block_h / 2
+        x2 = center_x + block_w / 2
+        y2 = center_y + block_h / 2
+        
+        uml_rect = canvas.create_rectangle(x1, y1, x2, y2, fill="lightgrey", tags="uml_block_" + table_name)
+        uml_text = canvas.create_text(center_x, center_y, text=table_name, font=("Arial", 12, "bold"), justify="center", anchor="center", tags="uml_block_" + table_name)
+        # Note: tags argument in create_* is more efficient than addtag_withtag immediately after
 
     btn_rect = tk.Button(toolbar, text="Rectangle", command=add_rectangle)
     btn_rect.pack(side="left", padx=2, pady=2)
@@ -151,15 +175,90 @@ def main():
 
     # --- Déplacement des blocs ---
     drag_data = {"x": 0, "y": 0, "item": None}
+    
+    # State for resizing
+    resize_state = {
+        "active": False,
+        "selected_block_tag": None,
+        "original_outline": "black" # Default, will be captured
+    }
 
     def on_click(event):
         items = canvas.find_closest(event.x, event.y)
         if not items:
+            # Deselect if clicking empty space? Optional. 
+            # For now, let's just ignore or maybe maintain selection.
             return
         item = items[0]
         drag_data["item"] = item
         drag_data["x"] = event.x
         drag_data["y"] = event.y
+
+        # Update selected block for resizing
+        tags = canvas.gettags(item)
+        group_tag = None
+        for tag in tags:
+            if tag.startswith("uml_block"):
+                group_tag = tag
+                break
+        
+        if group_tag:
+            # If we select a DIFFERENT block, we should reset resize mode on the OLD one if it was active?
+            # Or just switch selection.
+            # Per plan: "Reset resize mode when clicking a new block" seems safest to avoid confusion.
+            if resize_state["selected_block_tag"] and resize_state["selected_block_tag"] != group_tag:
+                # If the old one was in resize mode, turn it off visually
+                if resize_state["active"]:
+                     # Revert appearance of old block
+                     old_items = canvas.find_withtag(resize_state["selected_block_tag"])
+                     for i in old_items:
+                         if canvas.type(i) == 'rectangle':
+                             canvas.itemconfig(i, outline=resize_state["original_outline"], width=1)
+                     resize_state["active"] = False
+
+            resize_state["selected_block_tag"] = group_tag
+            # We don't automatically enter resize mode here, just track selection.
+
+    def toggle_resize_mode(event=None):
+        if not resize_state["selected_block_tag"]:
+            return
+            
+        group_tag = resize_state["selected_block_tag"]
+        # Find the rectangle item in this group to change border
+        items = canvas.find_withtag(group_tag)
+        rect_item = None
+        text_item = None
+        for item in items:
+            if canvas.type(item) == 'rectangle':
+                rect_item = item
+            elif canvas.type(item) == 'text':
+                text_item = item
+        
+        if not rect_item:
+            return
+
+        resize_state["active"] = not resize_state["active"]
+        
+        if resize_state["active"]:
+            # Enable resize mode: Blue border
+            # Capture original color first just in case (though we assume black/default mostly)
+            resize_state["original_outline"] = canvas.itemcget(rect_item, "outline")
+            canvas.itemconfig(rect_item, outline="blue", width=3)
+            print(f"Resize Mode ON for {group_tag}")
+        else:
+            # Disable resize mode: Restore
+            canvas.itemconfig(rect_item, outline=resize_state["original_outline"], width=1)
+            print(f"Resize Mode OFF for {group_tag}")
+            
+            # Recenter text horizontally
+            if text_item:
+                x1, y1, x2, y2 = canvas.coords(rect_item)
+                center_x = (x1 + x2) / 2
+                # Get current text coords
+                text_coords = canvas.coords(text_item)
+                # Text coords: [x, y]. We only change x.
+                canvas.coords(text_item, center_x, text_coords[1])
+
 
     def on_drag(event):
         if drag_data["item"]:
@@ -174,10 +273,54 @@ def main():
                     group_tag = tag
                     break
             
-            if group_tag:
-                 canvas.move(group_tag, dx, dy)
+            # RESIZE LOGIC
+            if resize_state["active"] and resize_state["selected_block_tag"] == group_tag:
+                 # We are resizing the SELECTED group
+                 # We need to find the rectangle to resize it
+                 # And maybe the text to center it? Or just leave text?
+                 # Requirement: "redimensionner" - implies updating the rectangle.
+                 
+                 items_in_group = canvas.find_withtag(group_tag)
+                 for item in items_in_group:
+                     if canvas.type(item) == 'rectangle':
+                         # Get coords
+                         x1, y1, x2, y2 = canvas.coords(item)
+                         # Simple resize: Dragging anywhere adds dx to x2 and dy to y2 (bottom-right resize)
+                         # Or we could be smarter depending on where they clicked, but user asked for "drag and drop" style
+                         # usually implying dragging the object itself in a specific mode.
+                         # Let's just adjust width/height by dx/dy.
+                         
+                         # Minimum size check
+                         new_x2 = x2 + dx
+                         new_y2 = y2 + dy
+                         if new_x2 - x1 < 20: new_x2 = x1 + 20
+                         if new_y2 - y1 < 20: new_y2 = y1 + 20
+                         
+                         canvas.coords(item, x1, y1, new_x2, new_y2)
+                         
+                         # Update center text if desired? 
+                         # Usually text stays centered or top-left.
+                         # Let's re-center text if strict center is preferred, 
+                         # OR just let it wrap if it was elaborate.
+                         # The text item is separate.
+                     elif canvas.type(item) == 'text':
+                         # Optional: realign text?
+                         # Current impl: text is just placed at specific coord.
+                         # If we want it to stay centered:
+                         # We need to know the new rect center.
+                         pass
+                 
+                 # Don't move the items, just resized the rect.
+                 # What about text position? If we only resize rect, text might separate visually.
+                 # Let's simple-move text relative to resize? No, usually text is content.
+                 # Let's keep text in place for now, or maybe it should be anchored.
+            
+            # MOVE LOGIC (Standard)
             else:
-                canvas.move(drag_data["item"], dx, dy)
+                if group_tag:
+                     canvas.move(group_tag, dx, dy)
+                else:
+                    canvas.move(drag_data["item"], dx, dy)
             
             drag_data["x"], drag_data["y"] = event.x, event.y
 
@@ -247,6 +390,10 @@ def main():
     canvas.bind("<B1-Motion>", on_drag)
     canvas.bind("<ButtonRelease-1>", on_release)
     canvas.bind("<Double-Button-1>", on_double_click)
+    
+    # Key bindings
+    root.bind("<Control-t>", toggle_resize_mode)
+    root.bind("<Control-T>", toggle_resize_mode) # Case insensitive safety
 
     # --- Zoom molette ---
     def zoom(event):
