@@ -1,4 +1,5 @@
 import os
+import json
 import tkinter as tk
 from tkinter import Menu
 from tkinter import ttk
@@ -44,6 +45,13 @@ def main():
         nonlocal db_model
         print("Loading JSON")
         try:
+            with open(selected_file, "r", encoding="utf-8") as infile:
+                data = json.load(infile)
+                
+            db_model = sqlp.DB.from_dict(data)
+
+            db_model.UML = data.get("UML", [])
+            
             print(f"Successfully loaded {selected_file}")
             if file_label_id:
                 canvas.itemconfig(file_label_id, text=f"Fichier : {selected_file}")
@@ -51,14 +59,26 @@ def main():
         except Exception as e:
             print(f"Error loading file: {e}")
             db_model = None
+            import traceback
+            traceback.print_exc()
 
     def load_uml():
         print("Loading UML")
         # Use a copy or ensure we don't iterate indefinitely if we were modifying the list (which we won't now, but safer)
         if db_model and db_model.tables:
+            # Create a map for faster lookup if UML data exists
+            uml_map = {}
+            if hasattr(db_model, "UML") and db_model.UML:
+                for item in db_model.UML:
+                    uml_map[item.get("table")] = (item.get("x"), item.get("y"))
+
             for table in db_model.tables:
                 print(f"Table : {table.name}")
-                add_table_block(table.name, add_to_model=False)
+                if table.name in uml_map:
+                    x, y = uml_map[table.name]
+                    add_table_block(table.name, table_x=x, table_y=y, add_to_model=False)
+                else:
+                    add_table_block(table.name, add_to_model=False)
 
     def select_file():
         nonlocal filename
@@ -89,9 +109,35 @@ def main():
             print("Nothing to save...")
             return
 
+        # Prepare Data
+        # 1. Get Model Data
+        data = json.loads(db_model.to_json())
+        
+        # 2. Get UML Data (Positions)
+        uml_data = []
+        for tag, table in uuid_to_table.items():
+            # Get visual bounds
+            bbox = canvas.bbox(tag)
+            if bbox:
+                x1, y1, x2, y2 = bbox
+                # Calculate center or top-left. Let's start with center as that's how we place them.
+                center_x = (x1 + x2) / 2
+                center_y = (y1 + y2) / 2
+                
+                # Rounding for cleaner JSON
+                uml_entry = {
+                    "table": table.name,
+                    "x": int(center_x),
+                    "y": int(center_y)
+                }
+                uml_data.append(uml_entry)
+        
+        # 3. Add to output
+        data["UML"] = uml_data
+
         # Crée ou écrase le fichier
         with open(output_path, "w", encoding="utf-8") as outfile:
-            outfile.write(db_model.to_json())
+            outfile.write(json.dumps(data, indent=4))
         print(f"Successfully saved {output_path}")
 
     def save():
@@ -213,7 +259,7 @@ def main():
             
             current_y += col_h + 2
 
-    def add_table_block(table_name: str = "Table_Name", add_to_model: bool = True):
+    def add_table_block(table_name: str = "Table_Name", table_x: int = 325, table_y: int = 85, add_to_model: bool = True):
         nonlocal db_model
         if db_model is None:
             db_model = sqlp.DB()
@@ -241,8 +287,8 @@ def main():
         uuid_to_table[tag_uuid] = target_table
         
         # Default Position
-        center_x = 325
-        center_y = 85
+        center_x = table_x
+        center_y = table_y
         
         draw_table_block(target_table, center_x, center_y, tag_uuid)
 

@@ -22,6 +22,17 @@ class Column:
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=True, indent=4)
 
+    @staticmethod
+    def from_dict(data):
+        col = Column(
+            name=data.get('name'),
+            dataType=data.get('dataType'),
+            attributes=data.get('attributes')
+        )
+        col.referenceTable = data.get('referenceTable')
+        col.referenceColumn = data.get('referenceColumn')
+        return col
+
 class Table:
     def __init__(self, name):
         self.name = name
@@ -36,6 +47,14 @@ class Table:
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=False, indent=4)
+
+    @staticmethod
+    def from_dict(data):
+        table = Table(data.get('name'))
+        columns_data = data.get('columns', [])
+        for col_data in columns_data:
+            table.add_column(Column.from_dict(col_data))
+        return table
 
 class QueryCreateTable:
     def __init__(self, queryText):
@@ -203,6 +222,15 @@ class Script:
             self.queriesCreateTable = []
             self.queriesCreateView = []
             self.queriesAlterTable = []
+            
+    @staticmethod
+    def from_dict(data):
+        script = Script()
+        script.scriptText = data.get('scriptText', "")
+        # Note: Reconstructing queries objects completely from JSON might be overkill if we just want the model.
+        # But for completeness, we could. However, the user request focuses on "Model" (DB/Tables).
+        # We'll just load the text. If we need successful re-parsing, we rely on the tables list in DB.
+        return script
     
     def format(self, scriptPath):
         scriptFile=open(scriptPath,"r")
@@ -337,6 +365,19 @@ class DB:
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=False, indent=4)
+
+    @staticmethod
+    def from_dict(data):
+        db = DB()
+        script_data = data.get('script')
+        if script_data:
+            db.script = Script.from_dict(script_data)
+        
+        tables_data = data.get('tables', [])
+        for table_data in tables_data:
+            db.tables.append(Table.from_dict(table_data))
+            
+        return db
 
 def Main():
     scriptPath = input('Enter the script path: ')

@@ -1,6 +1,7 @@
 - [ ] Supporter le test3.sql
-- [ ] Ajouter la sauvegarde des positions des blocs
-- [ ] Ajouter le chargement des positions des blocs
+- [x] Ajouter la sauvegarde des positions des blocs
+- [x] Ajouter le chargement des positions des blocs
+- [x] Ajouter le chargement d'un modèle à partir d'un JSON (json to object)
 - [ ] Ajouter l'exportation en SQL
 - [ ] Valider la différence entre une Vue et une Table dans le JSON
 - [ ] Ajouter les liens entre les tables
