@@ -17,6 +17,12 @@ def main():
     script = None
     filename = None
     file_label_id = None
+    
+    # Mapping visual blocks UUID -> Table object
+    uuid_to_table = {}
+    
+    # Context menu state
+    ctx_menu_data = {"uuid": None, "column_index": None}
 
     # --- Fonctions de menu / fichier ---
 
@@ -121,45 +127,211 @@ def main():
     canvas = tk.Canvas(canvas_frame, bg="white", scrollregion=(0, 0, 2000, 2000))
     canvas.pack(fill="both", expand=True)
 
-    def add_table_block(table_name: str = "Table_Name", add_to_model: bool = True):
-        nonlocal script
-        if script is None:
-            script = sqlp.Script()
-        
-        if add_to_model:
-            script.tables.append(sqlp.Table(table_name))
-        
-        # Calculate text size for perfect centering and sizing
-        # Create a temporary font object to measure
-        # Note: In a real app we might cache this or instantiate once
+    def draw_table_block(table, center_x, center_y, tag_id):
+        # Calculate text size for title
         from tkinter import font as tkfont
-        f = tkfont.Font(family="Arial", size=12, weight="bold")
-        text_w = f.measure(table_name)
-        text_h = f.metrics("linespace")
+        title_font = tkfont.Font(family="Arial", size=12, weight="bold")
+        col_font = tkfont.Font(family="Arial", size=10)
         
-        padding_x = 20
-        padding_y = 10
-        min_w = 150
-        min_h = 70
+        # Measure title width
+        title_w = title_font.measure(table.name)
+        title_h = title_font.metrics("linespace")
         
-        block_w = max(min_w, text_w + padding_x * 2)
-        block_h = max(min_h, text_h + padding_y * 2)
+        # Measure columns width
+        col_items_metrics = []
+        max_col_w = 0
+        col_h = col_font.metrics("linespace")
         
-        # Center position (fixed for now as in original)
-        center_x = 325
-        center_y = 85
+        for col in table.columns:
+            # Display format: Name (Type)
+            # You can adjust this string format as desired
+            col_str = f"{col.name} : {col.dataType}" if col.dataType else col.name
+            w = col_font.measure(col_str)
+            max_col_w = max(max_col_w, w)
+            col_items_metrics.append((col_str, w))
+            
+        padding_x = 10
+        # padding_y = 5 # Used inside loops, redefined below
+        
+        # Calculate Block Dimensions
+        # Width is max of title or widest column, plus padding
+        block_w = max(title_w, max_col_w) + padding_x * 2 + 20 # Extra 20 for safety/visual
+        
+        padding_y = 5 
+        # Height: title + separator + columns + padding
+        # Title section height
+        header_h = title_h + padding_y * 2
+        
+        # Columns section height
+        cols_h = len(table.columns) * (col_h + 2) + padding_y # +2 for spacing line
+        
+        block_h = header_h + cols_h
         
         x1 = center_x - block_w / 2
         y1 = center_y - block_h / 2
         x2 = center_x + block_w / 2
         y2 = center_y + block_h / 2
         
-        # Generate unique tag
-        tag_name = f"uml_block_{uuid.uuid4()}"
+        # Draw Background Rectangle
+        rect_id = canvas.create_rectangle(x1, y1, x2, y2, fill="lightgrey", tags=tag_id)
+        
+        # Draw Title
+        title_y = y1 + padding_y + title_h / 2
+        canvas.create_text(center_x, title_y, text=table.name, font=title_font, 
+                           justify="center", anchor="center", tags=(tag_id, "type:title"))
+        
+        # Draw Separator
+        sep_y = y1 + header_h
+        canvas.create_line(x1, sep_y, x2, sep_y, fill="black", tags=tag_id)
+        
+        # Draw Columns
+        current_y = sep_y + padding_y
+        for i, (col_str, _) in enumerate(col_items_metrics):
+            col_x = x1 + padding_x
+            
+            # Create text item
+            # Tag format: generic block tag, plus specific column tag to identify it
+            col_tag = f"col_idx:{i}"
+            cid = canvas.create_text(col_x, current_y, text=col_str, font=col_font, 
+                               anchor="nw", tags=(tag_id, col_tag, "type:column"))
+            
+            current_y += col_h + 2
 
-        uml_rect = canvas.create_rectangle(x1, y1, x2, y2, fill="lightgrey", tags=tag_name)
-        uml_text = canvas.create_text(center_x, center_y, text=table_name, font=("Arial", 12, "bold"), justify="center", anchor="center", tags=tag_name)
-        # Note: tags argument in create_* is more efficient than addtag_withtag immediately after
+    def add_table_block(table_name: str = "Table_Name", add_to_model: bool = True):
+        nonlocal script
+        if script is None:
+            script = sqlp.Script()
+        
+        target_table = None
+        if add_to_model:
+            target_table = sqlp.Table(table_name)
+            script.tables.append(target_table)
+        else:
+            # Find existing table by name
+            # Assuming uniqueness or picking last
+            for t in script.tables:
+                if t.name == table_name:
+                    target_table = t
+            
+            # Fallback if not found (shouldn't happen if logic is consistent)
+            if not target_table:
+                target_table = sqlp.Table(table_name)
+                script.tables.append(target_table)
+
+        # Generate unique tag for this visualization block
+        tag_uuid = f"uml_block_{uuid.uuid4()}"
+        
+        # Register mapping
+        uuid_to_table[tag_uuid] = target_table
+        
+        # Default Position
+        center_x = 325
+        center_y = 85
+        
+        draw_table_block(target_table, center_x, center_y, tag_uuid)
+
+    def redraw_block(tag_uuid):
+        table = uuid_to_table.get(tag_uuid)
+        if not table:
+            return
+            
+        # Get current position center from the rectangle
+        # We find items with this tag
+        items = canvas.find_withtag(tag_uuid)
+        rect_item = None
+        for item in items:
+            if canvas.type(item) == "rectangle":
+                rect_item = item
+                break
+        
+        if rect_item:
+            coords = canvas.coords(rect_item)
+            center_x = (coords[0] + coords[2]) / 2
+            center_y = (coords[1] + coords[3]) / 2
+        else:
+            # Fallback
+            center_x = 325
+            center_y = 85
+            
+        # Clear old items
+        canvas.delete(tag_uuid)
+        
+        # Redraw
+        draw_table_block(table, center_x, center_y, tag_uuid)
+
+    # --- Menu Contextuel ---
+    menu_table = Menu(root, tearoff=0)
+    
+    def on_add_column():
+        tag = ctx_menu_data["uuid"]
+        if not tag: return
+        table = uuid_to_table.get(tag)
+        if table:
+            # Add a default column
+            new_col = sqlp.Column("new_col", "VARCHAR(255)")
+            table.add_column(new_col)
+            redraw_block(tag)
+            
+    menu_table.add_command(label="Add Column", command=on_add_column)
+
+    menu_column = Menu(root, tearoff=0)
+    
+    def on_delete_column():
+        tag = ctx_menu_data["uuid"]
+        idx = ctx_menu_data["column_index"]
+        if not tag or idx is None: return
+        table = uuid_to_table.get(tag)
+        if table and 0 <= idx < len(table.columns):
+            table.columns.pop(idx)
+            redraw_block(tag)
+
+    menu_column.add_command(label="Delete Column", command=on_delete_column)
+
+    def show_context_menu(event):
+        # Determine what we clicked on
+        cx = canvas.canvasx(event.x)
+        cy = canvas.canvasy(event.y)
+        
+        # Find closest/overlapping
+        items = canvas.find_overlapping(cx-1, cy-1, cx+1, cy+1)
+        if not items:
+            return
+            
+        item = items[-1]
+        tags = canvas.gettags(item)
+        
+        # Identify block UUID
+        block_tag = None
+        for t in tags:
+            if t.startswith("uml_block_"):
+                block_tag = t
+                break
+        
+        if not block_tag:
+            return
+            
+        ctx_menu_data["uuid"] = block_tag
+        ctx_menu_data["column_index"] = None
+        
+        # Check if it is a column
+        is_column = False
+        col_idx = None
+        for t in tags:
+            if t.startswith("col_idx:"):
+                try:
+                    col_idx = int(t.split(":")[1])
+                    is_column = True
+                except:
+                    pass
+        
+        if is_column:
+            ctx_menu_data["column_index"] = col_idx
+            menu_column.post(event.x_root, event.y_root)
+        else:
+            # Assume general table click
+            menu_table.post(event.x_root, event.y_root)
+
+    canvas.bind("<Button-3>", show_context_menu)
 
     btn_rect = tk.Button(toolbar, text="Add Table", command=add_table_block)
     btn_rect.pack(side="left", padx=2, pady=2)
@@ -342,105 +514,66 @@ def main():
         drag_data["item"] = None
 
     def edit_text_item(item):
-        # Retrieve current text and coordinates
+        # Retrieve tags to identify what we are editing
+        tags = canvas.gettags(item)
+        uuid_tag = None
+        col_index = None
+        is_title = False
+        
+        for tag in tags:
+            if tag.startswith("uml_block_"):
+                uuid_tag = tag
+            if tag == "type:title":
+                is_title = True
+            if tag.startswith("col_idx:"):
+                try:
+                    col_index = int(tag.split(":")[1])
+                except: pass
+                
+        table = uuid_to_table.get(uuid_tag)
+        if not table:
+            return
+
+        # Get Text
         current_text = canvas.itemcget(item, "text")
         bbox = canvas.bbox(item)
-        if not bbox:
-            return
-            
-        x, y = bbox[0], bbox[1]
+        if not bbox: return
+        
+        # Entry setup
         width = bbox[2] - bbox[0]
         height = bbox[3] - bbox[1]
-
-        # Use a frame or entry directly. Here an Entry is sufficient.
-        # We need to place it on top of the canvas item.
-        entry = tk.Entry(canvas, highlightthickness=0, relief="flat", font="Arial 12 bold")
+        
+        entry = tk.Entry(canvas, highlightthickness=0, relief="flat", font="Arial 10") # Font match generic
+        if is_title:
+             entry.config(font=("Arial", 12, "bold"), justify='center')
+        
         entry.insert(0, current_text)
         entry.focus_force()
-
-        # Place the entry widget. scaling might be tricky if zoomed, 
-        # but bbox gives canvas coords. We need window coords for .place() if we use it on frame
-        # OR we can use create_window on the canvas. create_window is better for scrolling/zooming support usually,
-        # but editing while zoomed is complex. 
-        # For simplicity, let's use create_window at the item's position.
         
-        # Center of the item
         center_x = (bbox[0] + bbox[2]) / 2
         center_y = (bbox[1] + bbox[3]) / 2
         
         window_id = canvas.create_window(center_x, center_y, window=entry, width=width+20, height=height+5)
-
+        
         def save_edit(event=None):
             new_text = entry.get()
-            if not new_text: 
-                return # Don't allow empty names?
             
-            # 1. Update Script Model
-            # Find the table with the old name. 
-            # Note: ambiguous if multiple tables have same name, but we pick the first match.
-            found_table = None
-            for t in script.tables:
-                 if t.name == current_text:
-                     t.name = new_text
-                     found_table = t
-                     break
-            
-            if not found_table:
-                print(f"Warning: Could not find table with name '{current_text}' in script.")
-
-            # 2. Update Visuals (Text)
-            canvas.itemconfig(item, text=new_text)
-            
-            # 3. Update Tags
-            # No need to update tags anymore as we use stable UUIDs!
-            # 3. Retrieve Group Tag (UUID-based, so it doesn't change)
-            tags = canvas.gettags(item)
-            group_tag = None
-            for tag in tags:
-                if tag.startswith("uml_block"):
-                    group_tag = tag
-                    break
-            
-            new_group_tag = group_tag
-            
-            
-            # 4. Resize Block to fit new text
-            # Re-calculate size logic from add_table_block
-            from tkinter import font as tkfont
-            f = tkfont.Font(family="Arial", size=12, weight="bold")
-            text_w = f.measure(new_text)
-            text_h = f.metrics("linespace")
-            
-            padding_x = 20
-            padding_y = 10
-            min_w = 150
-            min_h = 70
-            
-            block_w = max(min_w, text_w + padding_x * 2)
-            block_h = max(min_h, text_h + padding_y * 2)
-            
-            # We need the current center to resize around it
-            # We can get it from the underlying rectangle coords or the text coords
-            text_coords = canvas.coords(item)
-            center_x, center_y = text_coords[0], text_coords[1]
-            
-            x1 = center_x - block_w / 2
-            y1 = center_y - block_h / 2
-            x2 = center_x + block_w / 2
-            y2 = center_y + block_h / 2
-            
-            # Update rectangle coords
-            # Need to find the rectangle item in the group (now having new_group_tag)
-            # We already have 'group_items' from before tag switch, or use new tag
-            items_to_resize = canvas.find_withtag(new_group_tag)
-            for i in items_to_resize:
-                if canvas.type(i) == 'rectangle':
-                    canvas.coords(i, x1, y1, x2, y2)
-                    break
-            
+            if is_title:
+                table.name = new_text
+            elif col_index is not None:
+                # Update column
+                # Checker bounds
+                if 0 <= col_index < len(table.columns):
+                    if ":" in new_text:
+                        parts = new_text.split(":")
+                        table.columns[col_index].name = parts[0].strip()
+                        if len(parts) > 1:
+                            table.columns[col_index].dataType = parts[1].strip()
+                    else:
+                        table.columns[col_index].name = new_text
             
             canvas.delete(window_id)
-            # Refocus canvas to ensure keys work
+            redraw_block(uuid_tag)
             canvas.focus_set()
 
         def cancel_edit(event=None):
