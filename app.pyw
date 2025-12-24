@@ -117,6 +117,19 @@ def main():
     menubar.add_cascade(label="File", menu=file_menu)
     file_menu.add_command(label="Open...", command=select_file)
     file_menu.add_command(label="Save", command=save)
+    
+    def close_current():
+        nonlocal db_model, filename, file_label_id
+        db_model = None
+        filename = None
+        uuid_to_table.clear()
+        canvas.delete("all")
+        # Restore default label
+        file_label_id = canvas.create_text(10, 10, anchor="nw", text="Aucun fichier chargé", fill="black", font=("Arial", 10))
+        print("Closed current model.")
+
+    file_menu.add_command(label="Close", command=close_current)
+    file_menu.add_separator()
     file_menu.add_command(label="Exit", command=root.destroy)
 
     # --- Barre de boutons ---
