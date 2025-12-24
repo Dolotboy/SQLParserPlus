@@ -193,13 +193,11 @@ class QueryAlterTable:
 
 class Script:
     def __init__(self, scriptPath=None):
-        self.tables = []
         if scriptPath:
             self.scriptText = self.format(scriptPath)
             self.queriesCreateTable = self.extract_queries_create_table()
             self.queriesCreateView = self.extract_queries_create_view()
             self.queriesAlterTable = self.extract_queries_alter_table()
-            self.extract_queries_data()
         else:
             self.scriptText = ""
             self.queriesCreateTable = []
@@ -294,21 +292,38 @@ class Script:
                     queryInstances.append(queryInstance)
         return queryInstances
     
-    def extract_queries_data(self):
-        # EXTRACT DATA FOR CREATE TABLE FIRST
-        queriesToProceed = self.queriesCreateTable.copy() # If not using copy, it will also remove from self.queriesCreateTable
-        for query in queriesToProceed[:]: # The [:] returns a "slice" of x, which happens to contain all its elements, and is thus effectively a copy of x.
-            self.tables.append(query.table)
-            queriesToProceed.remove(query)
-        
-        queriesToProceed = self.queriesCreateView.copy() # If not using copy, it will also remove from self.queriesCreateTable
-        for query in queriesToProceed[:]: # The [:] returns a "slice" of x, which happens to contain all its elements, and is thus effectively a copy of x.
-            self.tables.append(query.viewTable)
-            queriesToProceed.remove(query)
 
-        queriesToProceed = self.queriesAlterTable.copy() # If not using copy, it will also remove from self.queriesAlterTable
+    
+    def to_json(self):
+        return json.dumps(self, default=lambda o: o.__dict__, 
+            sort_keys=False, indent=4)
+    
+    def to_str(self):
+        for table in self.tables:
+            print(table.__str__())
+
+class DB:
+    def __init__(self, scriptPath=None):
+        self.tables = []
+        if scriptPath:
+            self.script = Script(scriptPath)
+            self.build_model()
+        else:
+            self.script = Script()
+
+    def build_model(self):
+        # EXTRACT DATA FOR CREATE TABLE FIRST
+        queriesToProceed = self.script.queriesCreateTable.copy() 
+        for query in queriesToProceed[:]: 
+            self.tables.append(query.table)
+        
+        queriesToProceed = self.script.queriesCreateView.copy() 
+        for query in queriesToProceed[:]: 
+            self.tables.append(query.viewTable)
+
+        queriesToProceed = self.script.queriesAlterTable.copy() 
         # EXTRACT DATA FOR ALTER TABLE SECOND
-        for query in queriesToProceed[:]: # The [:] returns a "slice" of x, which happens to contain all its elements, and is thus effectively a copy of x.
+        for query in queriesToProceed[:]: 
             query.extract_data()
             for table in self.tables:
                 if table.name == query.table:
@@ -319,21 +334,15 @@ class Script:
                                     column.referenceTable = alterStatement.columnReferenceTable
                                     column.referenceColumn = alterStatement.columnReferenceColumn
 
-            queriesToProceed.remove(query)
-    
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=False, indent=4)
-    
-    def to_str(self):
-        for table in self.tables:
-            print(table.__str__())
 
 def Main():
     scriptPath = input('Enter the script path: ')
-    script = Script(scriptPath)
-    with open(f"E:\Programmation\Scripts\SQLParser\output.json", "w+") as outfile:
-        outfile.write(script.to_json())
+    db = DB(scriptPath)
+    with open(f"output.json", "w+") as outfile:
+        outfile.write(db.to_json())
     input()
 
 if __name__ == "__main__":

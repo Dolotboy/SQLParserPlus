@@ -14,7 +14,7 @@ def main():
     root.title("SQL Parser Plus")
 
     # Variables partagées dans main()
-    script = None
+    db_model = None
     filename = None
     file_label_id = None
     
@@ -27,19 +27,21 @@ def main():
     # --- Fonctions de menu / fichier ---
 
     def load_sql(selected_file: str):
-        nonlocal script
+        nonlocal db_model
         try:
-            script = sqlp.Script(selected_file)
+            db_model = sqlp.DB(selected_file)
             print(f"Successfully parsed {selected_file}")
             if file_label_id:
                 canvas.itemconfig(file_label_id, text=f"Fichier : {selected_file}")
             load_uml()
         except Exception as e:
             print(f"Error parsing file: {e}")
-            script = None
+            db_model = None
+            import traceback
+            traceback.print_exc()
 
     def load_json(selected_file: str):
-        nonlocal script
+        nonlocal db_model
         print("Loading JSON")
         try:
             print(f"Successfully loaded {selected_file}")
@@ -48,14 +50,15 @@ def main():
             load_uml()
         except Exception as e:
             print(f"Error loading file: {e}")
-            script = None
+            db_model = None
 
     def load_uml():
         print("Loading UML")
         # Use a copy or ensure we don't iterate indefinitely if we were modifying the list (which we won't now, but safer)
-        for table in script.tables:
-            print(f"Table : {table.name}")
-            add_table_block(table.name, add_to_model=False)
+        if db_model and db_model.tables:
+            for table in db_model.tables:
+                print(f"Table : {table.name}")
+                add_table_block(table.name, add_to_model=False)
 
     def select_file():
         nonlocal filename
@@ -80,15 +83,15 @@ def main():
                 load_json(filename)
 
     def output_to_json(output_path: str):
-        nonlocal script
-        if script is None:
+        nonlocal db_model
+        if db_model is None:
             # Rien n'a été chargé, on ne fait rien
             print("Nothing to save...")
             return
 
         # Crée ou écrase le fichier
         with open(output_path, "w", encoding="utf-8") as outfile:
-            outfile.write(script.to_json())
+            outfile.write(db_model.to_json())
         print(f"Successfully saved {output_path}")
 
     def save():
@@ -198,25 +201,25 @@ def main():
             current_y += col_h + 2
 
     def add_table_block(table_name: str = "Table_Name", add_to_model: bool = True):
-        nonlocal script
-        if script is None:
-            script = sqlp.Script()
+        nonlocal db_model
+        if db_model is None:
+            db_model = sqlp.DB()
         
         target_table = None
         if add_to_model:
             target_table = sqlp.Table(table_name)
-            script.tables.append(target_table)
+            db_model.tables.append(target_table)
         else:
             # Find existing table by name
             # Assuming uniqueness or picking last
-            for t in script.tables:
+            for t in db_model.tables:
                 if t.name == table_name:
                     target_table = t
             
             # Fallback if not found (shouldn't happen if logic is consistent)
             if not target_table:
                 target_table = sqlp.Table(table_name)
-                script.tables.append(target_table)
+                db_model.tables.append(target_table)
 
         # Generate unique tag for this visualization block
         tag_uuid = f"uml_block_{uuid.uuid4()}"
@@ -273,6 +276,23 @@ def main():
             redraw_block(tag)
             
     menu_table.add_command(label="Add Column", command=on_add_column)
+    
+    def on_delete_table():
+        tag = ctx_menu_data["uuid"]
+        if not tag: return
+        table = uuid_to_table.get(tag)
+        if table:
+            # Remove from model
+            if db_model and table in db_model.tables:
+                db_model.tables.remove(table)
+            
+            # Remove from visual mapping
+            del uuid_to_table[tag]
+            
+            # Remove from canvas
+            canvas.delete(tag)
+            
+    menu_table.add_command(label="Delete Table", command=on_delete_table)
 
     menu_column = Menu(root, tearoff=0)
     
