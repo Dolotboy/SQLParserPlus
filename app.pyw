@@ -26,7 +26,7 @@ def main():
     uuid_to_table = {}
     
     # Context menu state
-    ctx_menu_data = {"uuid": None, "column_index": None}
+    ctx_menu_data = {"uuid": None, "column_index": None, "link_tag": None}
 
     # Link Creation State
     link_creation = {
@@ -367,7 +367,7 @@ def main():
                         # Use smooth line? 
                         canvas.create_line(src_pt[0], src_pt[1], tgt_pt[0], tgt_pt[1], 
                                            arrow=tk.LAST, fill="black", width=2, 
-                                           tags="link_line")
+                                           tags=("link_line", f"link_src_{u_src}_{i}"))
 
 
     def add_table_block(table_name: str = "Table_Name", table_x: int = 325, table_y: int = 85, add_to_model: bool = True):
@@ -505,6 +505,83 @@ def main():
 
     menu_column.add_command(label="Create a link", command=on_create_link)
 
+    def on_delete_link_column():
+        tag = ctx_menu_data["uuid"]
+        idx = ctx_menu_data["column_index"]
+        if not tag or idx is None: return
+        
+        table = uuid_to_table.get(tag)
+        if not table: return
+        
+        # Check specific column FK deletion
+        if 0 <= idx < len(table.columns):
+            col = table.columns[idx]
+            if col.referenceTable:
+                # It is a Foreign Key, simple delete
+                col.referenceTable = None
+                col.referenceColumn = None
+                print(f"Deleted FK on {table.name}.{col.name}")
+        
+        # Check Reference deletion (Cascade)
+        # Search ALL tables for columns referencing THIS column
+        col_name = table.columns[idx].name
+        for t in db_model.tables:
+            for c in t.columns:
+                 if c.referenceTable == table.name and c.referenceColumn == col_name:
+                     c.referenceTable = None
+                     c.referenceColumn = None
+                     print(f"Deleted reference from {t.name}.{c.name} to {table.name}.{col_name}")
+        
+        draw_links()
+
+    menu_column.add_command(label="Delete Link", command=on_delete_link_column)
+    
+    # --- Link Context Menu ---
+    menu_link = Menu(root, tearoff=0)
+    
+    def on_delete_link_line():
+        link_tag = ctx_menu_data["link_tag"] # Expected format: link_src_UUID_IDX
+        if not link_tag: return
+        
+        try:
+             parts = link_tag.split("_")
+             # format: link_src_{uuid}_{idx}
+             # uuid might haveunderscores? UUID usually uses hyphens.
+             # Let's handle parsing carefully.
+             # parts[0] = link
+             # parts[1] = src
+             # parts[-1] = idx
+             # middle = uuid
+             
+             idx = int(parts[-1])
+             uuid_str = "_".join(parts[2:-1])
+             
+             table = uuid_to_table.get(f"uml_block_{uuid_str}")
+             # Wait, our tag constructed: f"link_src_{u_src}_{i}" where u_src is the full tag key "uml_block_..."
+             
+             # So u_src contains underscores. 
+             # Re-parse:
+             # prefix: "link_src_" length 9.
+             # suffix: "_{i}" last underscore.
+             
+             last_underscore = link_tag.rfind("_")
+             idx_str = link_tag[last_underscore+1:]
+             idx = int(idx_str)
+             
+             u_src = link_tag[9:last_underscore]
+             
+             table = uuid_to_table.get(u_src)
+             if table and 0 <= idx < len(table.columns):
+                 col = table.columns[idx]
+                 col.referenceTable = None
+                 col.referenceColumn = None
+                 print(f"Deleted link via line click: {table.name}.{col.name}")
+                 draw_links()
+        except Exception as e:
+            print(f"Error deleting link: {e}")
+
+    menu_link.add_command(label="Delete Link", command=on_delete_link_line)
+
 
     def show_context_menu(event):
         # Determine what we clicked on
@@ -546,9 +623,31 @@ def main():
         if is_column:
             ctx_menu_data["column_index"] = col_idx
             menu_column.post(event.x_root, event.y_root)
-        else:
-            # Assume general table click
-            menu_table.post(event.x_root, event.y_root)
+            return
+
+        # Check for Link (lower priority than column/table blocks usually, but strict check here)
+        # We need to check if we clicked a line. 
+        # find_overlapping returns all. We looked at top-most (-1).
+        # If top most was NOT a block, maybe it was a link?
+        # Or maybe the link is ON TOP of the block? (Usually lines are drawn after/above rects or before?)
+        # Let's iterate all items found
+        link_tag_found = None
+        for item in items:
+            tgs = canvas.gettags(item)
+            for t in tgs:
+                if t.startswith("link_src_"):
+                    link_tag_found = t
+                    break
+            if link_tag_found: break
+        
+        if link_tag_found:
+            ctx_menu_data["link_tag"] = link_tag_found
+            menu_link.post(event.x_root, event.y_root)
+            return
+
+        # If block tag found but not column
+        if block_tag:
+             menu_table.post(event.x_root, event.y_root)
 
     canvas.bind("<Button-3>", show_context_menu)
 
