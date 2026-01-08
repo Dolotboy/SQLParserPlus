@@ -25,6 +25,14 @@ def main():
     # Context menu state
     ctx_menu_data = {"uuid": None, "column_index": None}
 
+    # Link Creation State
+    link_creation = {
+        "active": False,
+        "source_uuid": None,
+        "source_col_idx": None,
+        "line_id": None
+    }
+
     # --- Fonctions de menu / fichier ---
 
     def load_sql(selected_file: str):
@@ -79,6 +87,8 @@ def main():
                     add_table_block(table.name, table_x=x, table_y=y, add_to_model=False)
                 else:
                     add_table_block(table.name, add_to_model=False)
+        
+        draw_links()
 
     def select_file():
         nonlocal filename
@@ -258,6 +268,101 @@ def main():
                                anchor="nw", tags=(tag_id, col_tag, "type:column"))
             
             current_y += col_h + 2
+        
+        # Draw Links associated with this block (or all links)
+        # Calling draw_links() here might be expensive if many blocks move.
+        # Ideally we call it once after a move or load.
+        # But for now, let's just ensure links are up to date.
+        # We will expose a draw_links() function and call it externally or here.
+        pass
+
+    def get_column_connection_point(block_uuid, col_idx, is_source=True):
+        # Find the rectangle
+        items = canvas.find_withtag(block_uuid)
+        rect_id = None
+        for item in items:
+             if canvas.type(item) == "rectangle":
+                 rect_id = item
+                 break
+        if not rect_id: return None
+        
+        rx1, ry1, rx2, ry2 = canvas.coords(rect_id)
+        
+        # Find the column text
+        col_tag = f"col_idx:{col_idx}"
+        # Intersection of block_uuid and col_tag
+        # Ideally we search items with both tags.
+        # canvas.find_withtag is for single tag.
+        # Iterate items in group
+        col_item = None
+        for item in items:
+            tags = canvas.gettags(item)
+            if col_tag in tags:
+                col_item = item
+                break
+        
+        if not col_item:
+            # Fallback to header or something? No, return None
+            return None
+        
+        # Get column text center y
+        # Text is anchored nw
+        cx, cy = canvas.coords(col_item)
+        # We need height to find mid-y.
+        # Since we don't have the font object easily here reused, 
+        # we can use bbox of the text item.
+        bbox = canvas.bbox(col_item)
+        if not bbox: return None
+        mid_y = (bbox[1] + bbox[3]) / 2
+        
+        if is_source:
+            return (rx2, mid_y) # Right side
+        else:
+            return (rx1, mid_y) # Left side
+
+    def draw_links():
+        # Clear existing links
+        canvas.delete("link_line")
+        
+        if not db_model: return
+        
+        # We need to look at every table and every column to see if it has a reference
+        # And if that reference points to a valid table/uuid in our current view.
+        
+        # Map table_name -> uuid for quick lookup
+        # uuid_to_table is uuid->Table
+        # We need name->uuid
+        name_to_uuid = {t.name: u for u, t in uuid_to_table.items()}
+        
+        for u_src, t_src in uuid_to_table.items():
+            for i, col in enumerate(t_src.columns):
+                if col.referenceTable and col.referenceColumn:
+                    # Find target uuid
+                    u_tgt = name_to_uuid.get(col.referenceTable)
+                    if not u_tgt: continue
+                    
+                    # Find column index in target table
+                    # We have to look up the target table object
+                    t_tgt = uuid_to_table[u_tgt]
+                    tgt_col_idx = -1
+                    for j, c_tgt in enumerate(t_tgt.columns):
+                        if c_tgt.name == col.referenceColumn:
+                            tgt_col_idx = j
+                            break
+                    
+                    if tgt_col_idx == -1: continue
+                    
+                    # Get coordinates
+                    src_pt = get_column_connection_point(u_src, i, is_source=True)
+                    tgt_pt = get_column_connection_point(u_tgt, tgt_col_idx, is_source=False)
+                    
+                    if src_pt and tgt_pt:
+                        # Draw line
+                        # Use smooth line? 
+                        canvas.create_line(src_pt[0], src_pt[1], tgt_pt[0], tgt_pt[1], 
+                                           arrow=tk.LAST, fill="black", width=2, 
+                                           tags="link_line")
+
 
     def add_table_block(table_name: str = "Table_Name", table_x: int = 325, table_y: int = 85, add_to_model: bool = True):
         nonlocal db_model
@@ -291,6 +396,8 @@ def main():
         center_y = table_y
         
         draw_table_block(target_table, center_x, center_y, tag_uuid)
+        draw_links()
+
 
     def redraw_block(tag_uuid):
         table = uuid_to_table.get(tag_uuid)
@@ -320,6 +427,8 @@ def main():
         
         # Redraw
         draw_table_block(table, center_x, center_y, tag_uuid)
+        draw_links()
+
 
     # --- Menu Contextuel ---
     menu_table = Menu(root, tearoff=0)
@@ -365,6 +474,31 @@ def main():
             redraw_block(tag)
 
     menu_column.add_command(label="Delete Column", command=on_delete_column)
+    
+    def on_create_link():
+        # Start link creation mode
+        tag = ctx_menu_data["uuid"]
+        idx = ctx_menu_data["column_index"]
+        if not tag or idx is None: return
+        
+        # Set state
+        link_creation["active"] = True
+        link_creation["source_uuid"] = tag
+        link_creation["source_col_idx"] = idx
+        
+        # Get starting point
+        start_pt = get_column_connection_point(tag, idx, is_source=True)
+        if start_pt:
+            # Create a temp line
+            # End point is initially same as start
+            line = canvas.create_line(start_pt[0], start_pt[1], start_pt[0], start_pt[1], 
+                                      dash=(4, 2), fill="blue", width=2, tags="temp_link")
+            link_creation["line_id"] = line
+        
+        print(f"Link creation started from {tag} col {idx}")
+
+    menu_column.add_command(label="Create a link", command=on_create_link)
+
 
     def show_context_menu(event):
         # Determine what we clicked on
@@ -439,6 +573,73 @@ def main():
     }
 
     def on_click(event):
+        # LINK CREATION LOGIC
+        if link_creation["active"]:
+            # Check what we clicked on
+            cx = canvas.canvasx(event.x)
+            cy = canvas.canvasy(event.y)
+            
+            # Find closest item
+            items = canvas.find_overlapping(cx-1, cy-1, cx+1, cy+1)
+            target_col_item = None
+            target_block_uuid = None
+            
+            # Logic to find if we clicked a valid column
+            for item in items:
+                tags = canvas.gettags(item)
+                # We need to find the block and the col index
+                # Tags: "uml_block_...", "col_idx:..."
+                is_col = False
+                blk = None
+                for t in tags:
+                    if t.startswith("col_idx:"):
+                        is_col = True
+                    if t.startswith("uml_block_"):
+                        blk = t
+                
+                if is_col and blk:
+                     target_col_item = item
+                     target_block_uuid = blk
+                     break
+            
+            if target_col_item and target_block_uuid:
+                 # Resolve column index
+                 tags = canvas.gettags(target_col_item)
+                 col_idx = -1
+                 for t in tags:
+                     if t.startswith("col_idx:"):
+                         try: col_idx = int(t.split(":")[1])
+                         except: pass
+                 
+                 # Create the link in Model
+                 source_uuid = link_creation["source_uuid"]
+                 source_idx = link_creation["source_col_idx"]
+                 
+                 source_table = uuid_to_table.get(source_uuid)
+                 target_table = uuid_to_table.get(target_block_uuid)
+                 
+                 if source_table and target_table and col_idx != -1:
+                     # Update the SOURCE column to point to TARGET
+                     src_col = source_table.columns[source_idx]
+                     tgt_col = target_table.columns[col_idx]
+                     
+                     # Check if we are linking to same table? (Self-referencing is allowed)
+                     
+                     src_col.referenceTable = target_table.name
+                     src_col.referenceColumn = tgt_col.name
+                     
+                     print(f"Created link: {source_table.name}.{src_col.name} -> {target_table.name}.{tgt_col.name}")
+            
+            # Finish link creation (success or cancel if clicked elsewhere)
+            link_creation["active"] = False
+            canvas.delete(link_creation["line_id"])
+            link_creation["line_id"] = None
+            link_creation["source_uuid"] = None
+            link_creation["source_col_idx"] = None
+            
+            draw_links()
+            return # Don't process other click logic
+
         # find_closest returns the closest item even if far away.
         # Use find_overlapping to ensure we click ON the item.
         # We MUST convert screen coordinates (event.x, y) to canvas coordinates
@@ -588,6 +789,18 @@ def main():
                     canvas.move(drag_data["item"], dx, dy)
             
             drag_data["x"], drag_data["y"] = event.x, event.y
+            
+            # Update links during drag (could be optimized)
+            draw_links()
+
+    def on_mouse_move(event):
+        if link_creation["active"] and link_creation["line_id"]:
+            cx = canvas.canvasx(event.x)
+            cy = canvas.canvasy(event.y)
+            coords = canvas.coords(link_creation["line_id"])
+            # coords is [x1, y1, x2, y2]. Update x2, y2
+            canvas.coords(link_creation["line_id"], coords[0], coords[1], cx, cy)
+
 
     def on_release(event):
         drag_data["item"] = None
@@ -682,6 +895,7 @@ def main():
 
     canvas.bind("<Button-1>", on_click)
     canvas.bind("<B1-Motion>", on_drag)
+    canvas.bind("<Motion>", on_mouse_move)
     canvas.bind("<ButtonRelease-1>", on_release)
     canvas.bind("<Double-Button-1>", on_double_click)
     
