@@ -4,5 +4,5 @@
 - [x] Ajouter le chargement d'un modèle à partir d'un JSON (json to object)
 - [ ] Ajouter l'exportation en SQL
 - [ ] Valider la différence entre une Vue et une Table dans le JSON
-- [ ] Ajouter les liens entre les tables
-- [ ] Ajouter les liens entre les colonnes (Une fois que les liens entre les tables auront été validés comme MVP)
+- [x] Ajouter les liens entre les tables
+- [x] Ajouter les liens entre les colonnes (Une fois que les liens entre les tables auront été validés comme MVP)
