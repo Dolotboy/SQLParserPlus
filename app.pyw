@@ -17,7 +17,10 @@ def main():
     # Variables partagées dans main()
     db_model = None
     filename = None
-    file_label_id = None
+    db_model = None
+    filename = None
+    file_label_widget = None
+
     
     # Mapping visual blocks UUID -> Table object
     uuid_to_table = {}
@@ -40,8 +43,8 @@ def main():
         try:
             db_model = sqlp.DB(selected_file)
             print(f"Successfully parsed {selected_file}")
-            if file_label_id:
-                canvas.itemconfig(file_label_id, text=f"Fichier : {selected_file}")
+            if file_label_widget:
+                file_label_widget.config(text=f"Fichier : {selected_file}")
             load_uml()
         except Exception as e:
             print(f"Error parsing file: {e}")
@@ -61,8 +64,8 @@ def main():
             db_model.UML = data.get("UML", [])
             
             print(f"Successfully loaded {selected_file}")
-            if file_label_id:
-                canvas.itemconfig(file_label_id, text=f"Fichier : {selected_file}")
+            if file_label_widget:
+                file_label_widget.config(text=f"Fichier : {selected_file}")
             load_uml()
         except Exception as e:
             print(f"Error loading file: {e}")
@@ -175,14 +178,16 @@ def main():
     file_menu.add_command(label="Save", command=save)
     
     def close_current():
-        nonlocal db_model, filename, file_label_id
+        nonlocal db_model, filename, file_label_widget
         db_model = None
         filename = None
         uuid_to_table.clear()
         canvas.delete("all")
         zoom_state["level"] = 1.0
+        zoom_state["level"] = 1.0
         # Restore default label
-        file_label_id = canvas.create_text(10, 10, anchor="nw", text="Aucun fichier chargé", fill="black", font=("Arial", 10))
+        if file_label_widget:
+             file_label_widget.config(text="Aucun fichier chargé")
         print("Closed current model.")
 
     file_menu.add_command(label="Close", command=close_current)
@@ -561,7 +566,9 @@ def main():
     canvas.config(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
 
     # --- Objets initiaux ---
-    file_label_id = canvas.create_text(10, 10, anchor="nw", text="Aucun fichier chargé", fill="black", font=("Arial", 10))
+    # Create a Label widget instead of canvas text to keep it fixed
+    file_label_widget = tk.Label(canvas_frame, text="Aucun fichier chargé", bg="white", font=("Arial", 10))
+    file_label_widget.place(x=10, y=10)
 
     # --- Déplacement des blocs ---
     drag_data = {"x": 0, "y": 0, "item": None}
