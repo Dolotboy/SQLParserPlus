@@ -137,8 +137,8 @@ def main():
                 # Rounding for cleaner JSON
                 uml_entry = {
                     "table": table.name,
-                    "x": int(center_x),
-                    "y": int(center_y)
+                    "x": int(center_x / zoom_state["level"]),
+                    "y": int(center_y / zoom_state["level"])
                 }
                 uml_data.append(uml_entry)
         
@@ -180,6 +180,7 @@ def main():
         filename = None
         uuid_to_table.clear()
         canvas.delete("all")
+        zoom_state["level"] = 1.0
         # Restore default label
         file_label_id = canvas.create_text(10, 10, anchor="nw", text="Aucun fichier chargé", fill="black", font=("Arial", 10))
         print("Closed current model.")
@@ -569,8 +570,13 @@ def main():
     resize_state = {
         "active": False,
         "selected_block_tag": None,
+        "active": False,
+        "selected_block_tag": None,
         "original_outline": "black" # Default, will be captured
     }
+    
+    # Zoom State
+    zoom_state = {"level": 1.0}
 
     def on_click(event):
         # LINK CREATION LOGIC
@@ -905,20 +911,70 @@ def main():
 
     # --- Zoom molette ---
     def zoom(event):
-        # Windows / macOS: event.delta est non nul
+        # Determine scale factor
         if hasattr(event, "delta") and event.delta != 0:
+            # Windows/Mac
             factor = 1.1 if event.delta > 0 else 0.9
         else:
-            # Linux/X11: on regarde le bouton utilisé
-            if event.num == 4:      # molette vers le haut
-                factor = 1.1
-            elif event.num == 5:    # molette vers le bas
-                factor = 0.9
-            else:
-                return
+            # Linux buttons
+            if event.num == 4: factor = 1.1
+            elif event.num == 5: factor = 0.9
+            else: return
 
-        canvas.scale("all", event.x, event.y, factor, factor)
+        # 1. Get mouse position in Canvas Coordinates BEFORE scale
+        # canvasx/y gives the coordinate in the scrollable space
+        cx = canvas.canvasx(event.x)
+        cy = canvas.canvasy(event.y)
+        
+        # 2. Scale all items around (0,0)
+        # This preserves the global coordinate system integrity (Model * Zoom = View)
+        canvas.scale("all", 0, 0, factor, factor)
+        
+        # 3. Update Global Zoom State
+        zoom_state["level"] *= factor
+        
+        # 4. Update Scrollregion
+        # We need to update this so the scrollbars know the new universe size
         canvas.configure(scrollregion=canvas.bbox("all"))
+
+        # 5. Adjust Viewport to keep mouse fixed
+        # The point (cx, cy) is now at (cx*factor, cy*factor) in the new space.
+        # We want the screen position (event.x, event.y) to point to this new location.
+        # Current Left-Top of view is (canvasx(0), canvasy(0)).
+        # New desired Left-Top (L, T) must satisfy: 
+        #    L + event.x = cx * factor
+        #    T + event.y = cy * factor
+        # => L = cx * factor - event.x
+        
+        new_left = cx * factor - event.x
+        new_top = cy * factor - event.y
+        
+        # We use xview_moveto / yview_moveto
+        # Need to calculate fraction relative to scrollregion
+        scroll_bbox = canvas.bbox("all")
+        if scroll_bbox:
+            sx1, sy1, sx2, sy2 = scroll_bbox
+            # Width/Height of content
+            w = sx2 - sx1
+            h = sy2 - sy1
+            
+            # Avoid division by zero
+            if w > 1:
+                # fraction = (desired_pos - start_pos) / total_width
+                fx = (new_left - sx1) / w
+                canvas.xview_moveto(fx)
+            if h > 1:
+                fy = (new_top - sy1) / h
+                canvas.yview_moveto(fy)
+        
+        # 6. Scale Fonts (Text sizes remain constant in scale(), so we adjust manually)
+        new_title_size = int(12 * zoom_state["level"])
+        new_col_size = int(10 * zoom_state["level"])
+        if new_title_size < 1: new_title_size = 1
+        if new_col_size < 1: new_col_size = 1
+        
+        canvas.itemconfig("type:title", font=("Arial", new_title_size, "bold"))
+        canvas.itemconfig("type:column", font=("Arial", new_col_size))
 
     canvas.bind("<MouseWheel>", zoom)   # Windows / macOS
     canvas.bind("<Button-4>", zoom)     # Linux scroll up
