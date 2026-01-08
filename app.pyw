@@ -818,6 +818,14 @@ def main():
     zoom_state = {"level": 1.0}
 
     def on_click(event):
+        # Close any open context menus
+        try:
+             menu_table.unpost()
+             menu_column.unpost()
+             menu_link.unpost()
+        except:
+             pass
+
         # LINK CREATION LOGIC
         if link_creation["active"]:
             # Check what we clicked on
