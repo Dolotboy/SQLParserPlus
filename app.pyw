@@ -856,6 +856,9 @@ def main():
                      break
             
             
+            # Clean up target indicator if exists
+            canvas.delete("link_target_indicator")
+
             if target_col_item and target_block_uuid:
                  # Resolve column index
                  tags = canvas.gettags(target_col_item)
@@ -892,6 +895,7 @@ def main():
             # Finish link creation (success or cancel if clicked elsewhere)
             link_creation["active"] = False
             canvas.delete(link_creation["line_id"])
+            canvas.delete("link_target_indicator") # Ensure cleanup
             link_creation["line_id"] = None
             link_creation["source_uuid"] = None
             link_creation["source_col_idx"] = None
@@ -1059,6 +1063,54 @@ def main():
             coords = canvas.coords(link_creation["line_id"])
             # coords is [x1, y1, x2, y2]. Update x2, y2
             canvas.coords(link_creation["line_id"], coords[0], coords[1], cx, cy)
+            
+            # Target Indicator Logic
+            # Find closest item under mouse same way as click
+            items = canvas.find_overlapping(cx-1, cy-1, cx+1, cy+1)
+            target_uuid = None
+            target_col_idx = None
+            
+            for item in items:
+                tags = canvas.gettags(item)
+                is_col = False
+                blk = None
+                for t in tags:
+                     if t.startswith("col_idx:"):
+                         is_col = True
+                     if t.startswith("uml_block_"):
+                         blk = t
+                if is_col and blk:
+                     # Check if it's the source?
+                     if blk == link_creation["source_uuid"]:
+                          # Optional: Don't highlight self if not desired, 
+                          # but self-references are valid SQL.
+                          pass
+                     
+                     target_uuid = blk
+                     # Extract idx
+                     for t in tags:
+                         if t.startswith("col_idx:"):
+                             try: target_col_idx = int(t.split(":")[1])
+                             except: pass
+                     break
+            
+            # If found valid target, show indicator
+            if target_uuid and target_col_idx is not None:
+                # Calculate connection point
+                # is_source=False => Left side
+                pt = get_column_connection_point(target_uuid, target_col_idx, is_source=False)
+                if pt:
+                    # Draw or move indicator
+                    # Check if exists
+                    ind = canvas.find_withtag("link_target_indicator")
+                    r = 4
+                    if ind:
+                        canvas.coords(ind, pt[0]-r, pt[1]-r, pt[0]+r, pt[1]+r)
+                    else:
+                        canvas.create_oval(pt[0]-r, pt[1]-r, pt[0]+r, pt[1]+r, fill="blue", outline="blue", tags="link_target_indicator")
+            else:
+                 # Remove if not over valid target
+                 canvas.delete("link_target_indicator")
 
 
     def on_release(event):
