@@ -35,6 +35,13 @@ def main():
         "source_col_idx": None,
         "line_id": None
     }
+    
+    # Selection State
+    selection_state = {
+        "uuid": None,
+        "col_idx": None,
+        "rect_item_id": None # For column highlight
+    }
 
     # --- Fonctions de menu / fichier ---
 
@@ -250,8 +257,9 @@ def main():
         x2 = center_x + block_w / 2
         y2 = center_y + block_h / 2
         
+        
         # Draw Background Rectangle
-        rect_id = canvas.create_rectangle(x1, y1, x2, y2, fill="lightgrey", tags=tag_id)
+        rect_id = canvas.create_rectangle(x1, y1, x2, y2, fill="lightgrey", tags=(tag_id, "type:table_bg"))
         
         # Draw Title
         title_y = y1 + padding_y + title_h / 2
@@ -434,6 +442,121 @@ def main():
         # Redraw
         draw_table_block(table, center_x, center_y, tag_uuid)
         draw_links()
+        apply_selection_visuals()
+        update_highlight()
+
+    def update_highlight():
+        # Clear previous highlights
+        # 1. Reset all table outlines to black (simple bruteforce or smart tracking?)
+        # Smart tracking: we know what was selected before, but tracking "previous" is state sync hell.
+        # Let's just find the previously selected block if we knew it? 
+        # Actually, we can just reset the specific one we are unselecting if we track it.
+        # But simpler: We iterate items in selection_state["uuid"] to "unselect" them first?
+        # A simpler approach: Tag all "selected" items with "highlighted".
+        
+        # Reset Table Borders
+        # We find touches only the necessary table if possible.
+        # But here, let's just use canvas.itemconfig to reset everything? No, slow.
+        # Let's rely on finding the item we want to Highlight, and assuming we must Unhighlight others.
+        # To avoid global reset, let's assume we maintain the state correctly.
+        
+        # For now, let's just reset the specific target if state changed?
+        # Let's iterate all blocks? No. 
+        # Let's search for items with "highlight_border" tag?
+        # Better: Tag the highlight effect.
+        
+        # 1. Remove column highlight rect
+        canvas.delete("selection_highlight")
+        
+        # 2. Reset table borders
+        # Find all rectangles in uml blocks? or just the one we knew?
+        # Let's search for "type:table_bg" (we need to tag background rects)
+        # We didn't tag them "type:table_bg" yet. Let's add that to draw_table_block.
+        # Assuming we modify draw_table_block below.
+        
+        # For now, simplistic approach:
+        # We know the UUID of the CURRENT selection.
+        # We need to unselect everything else? 
+        # Actually, standard behavior: Select New -> Unselect Old.
+        # So we just need to ensure we don't leave artifacts.
+        
+        pass 
+        # Real implementation inside checking selection_state below
+        
+        uuid = selection_state["uuid"]
+        col_idx = selection_state["col_idx"]
+        
+        # First, reset ALL outlines to black. 
+        # Ideally we only reset the previous one.
+        # We can store "last_highlighted_uuid" in state.
+        pass
+
+    def apply_selection_visuals():
+        # Clean up
+        canvas.delete("selection_highlight")
+        # Reset all blocks to black outline? 
+        # This is heavy. Let's optimize: only reset if we change selection.
+        # But since valid "black" is standard, let's just ensure we set "blue" on current.
+        # AND reset "blue" items to "black".
+        
+        # Find all items that are blue and reset them?
+        # Canvas doesn't easily query by color.
+        # We will use a dedicated tag "selected_border" for the rectangle.
+        
+        # Strategy:
+        # 1. Find all items with tag "selected" (we will add this tag).
+        # 2. Reset their outline to black.
+        # 3. Remove tag "selected".
+        # 4. Apply new selection.
+        
+        # Existing selected items
+        items = canvas.find_withtag("selected_table")
+        for item in items:
+            canvas.itemconfig(item, outline="black", width=1)
+            canvas.dtag(item, "selected_table")
+            
+        if not selection_state["uuid"]:
+            return
+
+        tag = selection_state["uuid"]
+        
+        # If Table Selection
+        if selection_state["col_idx"] is None:
+            # Find the rectangle
+            # We assume the rectangle is the one with tag `tag` and type rectangle
+            items = canvas.find_withtag(tag)
+            for item in items:
+                if canvas.type(item) == "rectangle":
+                    canvas.itemconfig(item, outline="blue", width=2)
+                    canvas.addtag_withtag("selected_table", item)
+                    break 
+        
+        # If Column Selection
+        else:
+            # We want to draw a blue rectangle around the column text
+            # And it must move with the block.
+            idx = selection_state["col_idx"]
+            
+            # Find the column text item
+            # Helper function logic
+            items = canvas.find_withtag(tag)
+            col_item = None
+            col_tag = f"col_idx:{idx}"
+            for item in items:
+                tags = canvas.gettags(item)
+                if col_tag in tags:
+                    col_item = item
+                    break
+            
+            if col_item:
+                bbox = canvas.bbox(col_item)
+                if bbox:
+                    # Draw rect
+                    # Expand slightly
+                    x1, y1, x2, y2 = bbox
+                    rect = canvas.create_rectangle(x1-2, y1-2, x2+2, y2+2, outline="blue", width=2, 
+                                                   tags=("selection_highlight", tag)) 
+                                                   # Add 'tag' so it moves with group!
 
 
     # --- Menu Contextuel ---
@@ -622,6 +745,12 @@ def main():
         
         if is_column:
             ctx_menu_data["column_index"] = col_idx
+            
+            # UPDATE SELECTION FOR RIGHT CLICK
+            selection_state["uuid"] = block_tag
+            selection_state["col_idx"] = col_idx
+            apply_selection_visuals()
+            
             menu_column.post(event.x_root, event.y_root)
             return
 
@@ -647,6 +776,10 @@ def main():
 
         # If block tag found but not column
         if block_tag:
+             selection_state["uuid"] = block_tag
+             selection_state["col_idx"] = None
+             apply_selection_visuals()
+             
              menu_table.post(event.x_root, event.y_root)
 
     canvas.bind("<Button-3>", show_context_menu)
@@ -714,6 +847,7 @@ def main():
                      target_block_uuid = blk
                      break
             
+            
             if target_col_item and target_block_uuid:
                  # Resolve column index
                  tags = canvas.gettags(target_col_item)
@@ -722,6 +856,11 @@ def main():
                      if t.startswith("col_idx:"):
                          try: col_idx = int(t.split(":")[1])
                          except: pass
+                 
+                 # UPDATE SELECTION
+                 selection_state["uuid"] = target_block_uuid
+                 selection_state["col_idx"] = col_idx
+                 apply_selection_visuals()
                  
                  # Create the link in Model
                  source_uuid = link_creation["source_uuid"]
