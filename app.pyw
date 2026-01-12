@@ -43,6 +43,14 @@ def main():
         "rect_item_id": None # For column highlight
     }
 
+    # Edit State
+    edit_state = {
+        "active": False,
+        "save_callback": None
+    }
+
+    # --- Fonctions de menu / fichier ---
+
     # --- Fonctions de menu / fichier ---
 
     def load_sql(selected_file: str):
@@ -818,6 +826,12 @@ def main():
     zoom_state = {"level": 1.0}
 
     def on_click(event):
+        # Auto-save edit if active
+        if edit_state["active"] and edit_state["save_callback"]:
+             edit_state["save_callback"]()
+             # If we saved, we might have redrawn blocks. 
+             # Proceeding with standard click logic is fine as it re-finds items based on coordinates.
+             
         # Close any open context menus
         try:
              menu_table.unpost()
@@ -1146,46 +1160,107 @@ def main():
         width = bbox[2] - bbox[0]
         height = bbox[3] - bbox[1]
         
-        entry = tk.Entry(canvas, highlightthickness=0, relief="flat", font="Arial 10") # Font match generic
+        # ACTIVATE EDIT STATE
+        edit_state["active"] = True
+        
+        container = None
+        entry = None # For title
+        name_entry = None # For column
+        type_combo = None # For column
+        
         if is_title:
-             entry.config(font=("Arial", 12, "bold"), justify='center')
-        
-        entry.insert(0, current_text)
-        entry.focus_force()
-        
-        center_x = (bbox[0] + bbox[2]) / 2
-        center_y = (bbox[1] + bbox[3]) / 2
-        
-        window_id = canvas.create_window(center_x, center_y, window=entry, width=width+20, height=height+5)
+             entry = tk.Entry(canvas, highlightthickness=0, relief="flat", font=("Arial", 12, "bold"), justify='center')
+             entry.insert(0, current_text)
+             entry.focus_force()
+             
+             center_x = (bbox[0] + bbox[2]) / 2
+             center_y = (bbox[1] + bbox[3]) / 2
+             window_id = canvas.create_window(center_x, center_y, window=entry, width=width+20, height=height+5)
+             
+             widget_main = entry
+             
+        elif col_index is not None:
+             # Parse current text "Name : Type"
+             col_name_val = ""
+             col_type_val = ""
+             if ":" in current_text:
+                 parts = current_text.split(":")
+                 col_name_val = parts[0].strip()
+                 if len(parts) > 1: result_type = parts[1].strip()
+                 # But wait, original code constructed it as f"{col.name} : {col.dataType}"
+                 # So we can trust that structure mostly.
+                 col_type_val = parts[1].strip() if len(parts)>1 else ""
+             else:
+                 col_name_val = current_text
+            
+             # Create Frame
+             container = tk.Frame(canvas, bg="white")
+             
+             # Name Entry
+             name_entry = tk.Entry(container, width=15, highlightthickness=1, relief="solid")
+             name_entry.insert(0, col_name_val)
+             name_entry.pack(side="left", padx=1)
+             
+             # Type Combobox
+             common_types = ["INTEGER", "VARCHAR(255)", "TEXT", "BOOLEAN", "DATE", "DATETIME", "FLOAT", "DOUBLE", "BLOB", "SERIAL"]
+             type_combo = ttk.Combobox(container, values=common_types, width=12)
+             type_combo.set(col_type_val)
+             type_combo.pack(side="left", padx=1)
+             
+             name_entry.focus_force()
+             
+             center_x = (bbox[0] + bbox[2]) / 2
+             center_y = (bbox[1] + bbox[3]) / 2
+             # We need more width for both
+             window_id = canvas.create_window(center_x, center_y, window=container) # Let it size itself?
+             
+             widget_main = name_entry # For binding? Bind to both?
         
         def save_edit(event=None):
-            new_text = entry.get()
-            
-            if is_title:
+            if is_title and entry:
+                new_text = entry.get()
                 table.name = new_text
-            elif col_index is not None:
+            elif col_index is not None and name_entry and type_combo:
+                new_name = name_entry.get()
+                new_type = type_combo.get()
+                
                 # Update column
-                # Checker bounds
                 if 0 <= col_index < len(table.columns):
-                    if ":" in new_text:
-                        parts = new_text.split(":")
-                        table.columns[col_index].name = parts[0].strip()
-                        if len(parts) > 1:
-                            table.columns[col_index].dataType = parts[1].strip()
-                    else:
-                        table.columns[col_index].name = new_text
+                    table.columns[col_index].name = new_name
+                    table.columns[col_index].dataType = new_type
             
             canvas.delete(window_id)
+            edit_state["active"] = False
+            edit_state["save_callback"] = None
             redraw_block(uuid_tag)
             canvas.focus_set()
 
         def cancel_edit(event=None):
             canvas.delete(window_id)
+            edit_state["active"] = False
+            edit_state["save_callback"] = None
             canvas.focus_set()
+        
+        # Register callback for auto-save
+        edit_state["save_callback"] = save_edit
 
-        entry.bind("<Return>", save_edit)
-        entry.bind("<FocusOut>", save_edit) # Auto-save on click away
-        entry.bind("<Escape>", cancel_edit)
+        if is_title and entry:
+            entry.bind("<Return>", save_edit)
+            entry.bind("<FocusOut>", save_edit) 
+            entry.bind("<Escape>", cancel_edit)
+        elif container:
+            # Bind to internal widgets
+            name_entry.bind("<Return>", save_edit)
+            # name_entry.bind("<FocusOut>", save_edit) # FocusOut on one widget might trigger when moving to next.
+            # Ideally verify focus is leaving the Container? 
+            # Tkinter doesn't have easy "FocusOut of Frame".
+            # Let's remove FocusOut auto-save for columns to allow switching between Name and Type.
+            # User must press Return to save.
+            
+            type_combo.bind("<Return>", save_edit)
+            
+            name_entry.bind("<Escape>", cancel_edit)
+            type_combo.bind("<Escape>", cancel_edit)
 
     def on_double_click(event):
         # Find item closest to click, corrected for scroll/zoom
