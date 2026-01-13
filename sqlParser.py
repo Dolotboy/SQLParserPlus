@@ -320,8 +320,6 @@ class Script:
                     queryInstances.append(queryInstance)
         return queryInstances
     
-
-    
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=False, indent=4)
@@ -365,6 +363,9 @@ class DB:
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=False, indent=4)
+
+    def to_sql(self):
+        return
 
     @staticmethod
     def from_dict(data):

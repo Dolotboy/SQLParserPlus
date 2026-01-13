@@ -20,7 +20,6 @@ def main():
     db_model = None
     filename = None
     file_label_widget = None
-
     
     # Mapping visual blocks UUID -> Table object
     uuid_to_table = {}
@@ -168,6 +167,22 @@ def main():
             outfile.write(json.dumps(data, indent=4))
         print(f"Successfully saved {output_path}")
 
+    def export_to_sql():
+        nonlocal db_model
+        if db_model is None:
+            # Rien n'a été chargé, on ne fait rien
+            print("Nothing to export...")
+            return
+
+        path = askdirectory(title="Choose output directory")
+        if not path:
+            return
+        
+        output_path = os.path.join(path, "output.sql")
+        with open(output_path, "w", encoding="utf-8") as outfile:
+            outfile.write(db_model.to_sql())
+        print(f"Successfully exported {output_path}")
+
     def save():
         nonlocal filename
         if not filename or not filename.lower().endswith(".json"):
@@ -191,6 +206,7 @@ def main():
     menubar.add_cascade(label="File", menu=file_menu)
     file_menu.add_command(label="Open...", command=select_file)
     file_menu.add_command(label="Save", command=save)
+    file_menu.add_command(label="Export to SQL", command=export_to_sql)
     
     def close_current():
         nonlocal db_model, filename, file_label_widget
