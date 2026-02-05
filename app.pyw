@@ -249,9 +249,18 @@ def main():
         col_h = col_font.metrics("linespace")
         
         for col in table.columns:
-            # Display format: Name (Type)
-            # You can adjust this string format as desired
+            # Display format: Name : Type [PK][NN][AI]
+            attr_text = ""
+            if col.attributes:
+                attrs_upper = [a.upper() for a in col.attributes]
+                if "PRIMARY" in attrs_upper: attr_text += "[PK]"
+                if "NOT" in attrs_upper and "NULL" in attrs_upper: attr_text += "[NN]"
+                if "AUTO_INCREMENT" in attrs_upper: attr_text += "[AI]"
+            
             col_str = f"{col.name} : {col.dataType}" if col.dataType else col.name
+            if attr_text:
+                col_str += f" {attr_text}"
+                
             w = col_font.measure(col_str)
             max_col_w = max(max_col_w, w)
             col_items_metrics.append((col_str, w))
@@ -635,6 +644,63 @@ def main():
             redraw_block(tag)
 
     menu_column.add_command(label="Delete Column", command=on_delete_column)
+    menu_column.add_separator()
+
+    def on_toggle_pk():
+        tag = ctx_menu_data["uuid"]
+        idx = ctx_menu_data["column_index"]
+        if not tag or idx is None: return
+        table = uuid_to_table.get(tag)
+        if table and 0 <= idx < len(table.columns):
+            col = table.columns[idx]
+            if not col.attributes: col.attributes = []
+            attrs_upper = [a.upper() for a in col.attributes]
+            if "PRIMARY" in attrs_upper:
+                # Remove PRIMARY KEY
+                col.attributes = [a for a in col.attributes if a.upper() not in ["PRIMARY", "KEY"]]
+            else:
+                # Add PRIMARY KEY
+                col.attributes.extend(["PRIMARY", "KEY"])
+            redraw_block(tag)
+
+    def on_toggle_nn():
+        tag = ctx_menu_data["uuid"]
+        idx = ctx_menu_data["column_index"]
+        if not tag or idx is None: return
+        table = uuid_to_table.get(tag)
+        if table and 0 <= idx < len(table.columns):
+            col = table.columns[idx]
+            if not col.attributes: col.attributes = []
+            attrs_upper = [a.upper() for a in col.attributes]
+            if "NOT" in attrs_upper and "NULL" in attrs_upper:
+                # Remove NOT NULL
+                col.attributes = [a for a in col.attributes if a.upper() not in ["NOT", "NULL"]]
+            else:
+                # Add NOT NULL
+                col.attributes.extend(["NOT", "NULL"])
+            redraw_block(tag)
+
+    def on_toggle_ai():
+        tag = ctx_menu_data["uuid"]
+        idx = ctx_menu_data["column_index"]
+        if not tag or idx is None: return
+        table = uuid_to_table.get(tag)
+        if table and 0 <= idx < len(table.columns):
+            col = table.columns[idx]
+            if not col.attributes: col.attributes = []
+            attrs_upper = [a.upper() for a in col.attributes]
+            if "AUTO_INCREMENT" in attrs_upper:
+                # Remove AUTO_INCREMENT
+                col.attributes = [a for a in col.attributes if a.upper() != "AUTO_INCREMENT"]
+            else:
+                # Add AUTO_INCREMENT
+                col.attributes.append("AUTO_INCREMENT")
+            redraw_block(tag)
+
+    menu_column.add_command(label="Toggle Primary Key", command=on_toggle_pk)
+    menu_column.add_command(label="Toggle Not Null", command=on_toggle_nn)
+    menu_column.add_command(label="Toggle Auto Increment", command=on_toggle_ai)
+    menu_column.add_separator()
     
     def on_create_link():
         # Start link creation mode
@@ -1201,6 +1267,9 @@ def main():
         entry = None # For title
         name_entry = None # For column
         type_combo = None # For column
+        pk_var = None
+        nn_var = None
+        ai_var = None
         
         if is_title:
              entry = tk.Entry(canvas, highlightthickness=0, relief="flat", font=("Arial", 12, "bold"), justify='center')
@@ -1241,6 +1310,18 @@ def main():
              type_combo.set(col_type_val)
              type_combo.pack(side="left", padx=1)
              
+             # Attributes Checkbuttons
+             col = table.columns[col_index]
+             attrs_upper = [a.upper() for a in col.attributes] if col.attributes else []
+             
+             pk_var = tk.BooleanVar(value="PRIMARY" in attrs_upper)
+             nn_var = tk.BooleanVar(value="NOT" in attrs_upper and "NULL" in attrs_upper)
+             ai_var = tk.BooleanVar(value="AUTO_INCREMENT" in attrs_upper)
+             
+             tk.Checkbutton(container, text="PK", variable=pk_var, bg="white").pack(side="left", padx=1)
+             tk.Checkbutton(container, text="NN", variable=nn_var, bg="white").pack(side="left", padx=1)
+             tk.Checkbutton(container, text="AI", variable=ai_var, bg="white").pack(side="left", padx=1)
+             
              name_entry.focus_force()
              
              center_x = (bbox[0] + bbox[2]) / 2
@@ -1260,8 +1341,16 @@ def main():
                 
                 # Update column
                 if 0 <= col_index < len(table.columns):
-                    table.columns[col_index].name = new_name
-                    table.columns[col_index].dataType = new_type
+                    col = table.columns[col_index]
+                    col.name = new_name
+                    col.dataType = new_type
+                    
+                    # Update attributes
+                    new_attrs = []
+                    if pk_var.get(): new_attrs.extend(["PRIMARY", "KEY"])
+                    if nn_var.get(): new_attrs.extend(["NOT", "NULL"])
+                    if ai_var.get(): new_attrs.append("AUTO_INCREMENT")
+                    col.attributes = new_attrs
             
             canvas.delete(window_id)
             edit_state["active"] = False
