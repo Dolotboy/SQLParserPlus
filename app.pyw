@@ -49,9 +49,6 @@ def main():
     }
 
     # --- Fonctions de menu / fichier ---
-
-    # --- Fonctions de menu / fichier ---
-
     def load_sql(selected_file: str):
         nonlocal db_model
         try:
