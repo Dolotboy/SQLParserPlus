@@ -274,7 +274,8 @@ def main():
         # Columns section height
         cols_h = len(table.columns) * (col_h + 2) + padding_y # +2 for spacing line
         
-        block_h = header_h + cols_h
+        btn_row_h = 22 # Space for the "+" button row
+        block_h = header_h + cols_h + btn_row_h
         
         x1 = center_x - block_w / 2
         y1 = center_y - block_h / 2
@@ -306,6 +307,16 @@ def main():
                                anchor="nw", tags=(tag_id, col_tag, "type:column"))
             
             current_y += col_h + 2
+            
+        # Draw Add Column Button (+)
+        btn_size = 18
+        bx2 = x2 - 5
+        by2 = y2 - 5
+        bx1 = bx2 - btn_size
+        by1 = by2 - btn_size
+        
+        canvas.create_rectangle(bx1, by1, bx2, by2, fill="#e1e1e1", outline="#999999", tags=(tag_id, "add_btn"))
+        canvas.create_text((bx1+bx2)/2, (by1+by2)/2, text="+", font=("Arial", 12, "bold"), fill="#333333", tags=(tag_id, "add_btn"))
         
         # Draw Links associated with this block (or all links)
         # Calling draw_links() here might be expensive if many blocks move.
@@ -949,6 +960,16 @@ def main():
             
         # find_overlapping returns tuple. The last one is the top-most.
         item = items[-1]
+        
+        # Check if Add Column Button was clicked
+        tags = canvas.gettags(item)
+        if "add_btn" in tags:
+            for t in tags:
+                if t.startswith("uml_block_"):
+                    ctx_menu_data["uuid"] = t
+                    on_add_column()
+                    return "break"
+
         drag_data["item"] = item
         drag_data["x"] = event.x
         drag_data["y"] = event.y
