@@ -22,6 +22,12 @@ class Column:
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=True, indent=4)
 
+    def to_sql(self):
+        name = self.name.replace("`", "")
+        data_type = self.dataType if self.dataType else "VARCHAR(255)"
+        attributes_str = " " + " ".join(self.attributes) if self.attributes else ""
+        return f"`{name}` {data_type}{attributes_str}"
+
     @staticmethod
     def from_dict(data):
         col = Column(
@@ -47,6 +53,16 @@ class Table:
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=False, indent=4)
+
+    def to_sql(self):
+        name = self.name.replace("`", "")
+        sql = f"CREATE TABLE `{name}` (\n"
+        columns_sql = []
+        for col in self.columns:
+            columns_sql.append("  " + col.to_sql())
+        sql += ",\n".join(columns_sql)
+        sql += "\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"
+        return sql
 
     @staticmethod
     def from_dict(data):
@@ -74,7 +90,7 @@ class QueryCreateTable:
             if len(columnParts) >= 2: 
                 columnName = columnParts[0]
                 columnType = columnParts[1]
-                columnAttributes = [part for part in columnParts[2:] if part.upper() in ["PRIMARY", "KEY", "NOT", "NULL", "AUTO_INCREMENT"]]
+                columnAttributes = [part for part in columnParts[2:] if part.upper() in ["PRIMARY", "KEY", "NOT", "NULL", "AUTO_INCREMENT", "UNSIGNED"]]
                 columnInstance = Column(columnName, columnType, columnAttributes)
                 tableInstance.add_column(columnInstance)
         return tableInstance
@@ -365,7 +381,27 @@ class DB:
             sort_keys=False, indent=4)
 
     def to_sql(self):
-        return
+        sql_parts = []
+        # Create Tables
+        for table in self.tables:
+            sql_parts.append(table.to_sql())
+        
+        # Add Foreign Keys via ALTER TABLE
+        for table in self.tables:
+            table_name = table.name.replace("`", "")
+            fks = []
+            for col in table.columns:
+                if col.referenceTable and col.referenceColumn:
+                    col_name = col.name.replace("`", "")
+                    ref_table = col.referenceTable.replace("`", "")
+                    ref_col = col.referenceColumn.replace("`", "")
+                    fk_name = f"fk_{table_name}_{col_name}"
+                    fk_sql = f"ALTER TABLE `{table_name}` ADD CONSTRAINT `{fk_name}` FOREIGN KEY (`{col_name}`) REFERENCES `{ref_table}` (`{ref_col}`);"
+                    fks.append(fk_sql)
+            if fks:
+                sql_parts.append("\n".join(fks))
+        
+        return "\n\n".join(sql_parts)
 
     @staticmethod
     def from_dict(data):

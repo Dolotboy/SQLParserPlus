@@ -2,7 +2,7 @@
 - [x] Ajouter la sauvegarde des positions des blocs
 - [x] Ajouter le chargement des positions des blocs
 - [x] Ajouter le chargement d'un modèle à partir d'un JSON (json to object)
-- [ ] Ajouter l'exportation en SQL
+- [x] Ajouter l'exportation en SQL
 - [ ] Valider la différence entre une Vue et une Table dans le JSON
 - [x] Ajouter les liens entre les tables
 - [x] Ajouter les liens entre les colonnes (Une fois que les liens entre les tables auront été validés comme MVP)
