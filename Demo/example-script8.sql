@@ -7,7 +7,7 @@ CREATE TABLE `cache` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `cache_locks`
+-- Structure `cache_locks`
 --
 
 CREATE TABLE `cache_locks` (
@@ -19,7 +19,7 @@ CREATE TABLE `cache_locks` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `failed_jobs`
+-- Structure `failed_jobs`
 --
 
 CREATE TABLE `failed_jobs` (
@@ -35,7 +35,7 @@ CREATE TABLE `failed_jobs` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `jobs`
+-- Structure `jobs`
 --
 
 CREATE TABLE `jobs` (
@@ -51,7 +51,7 @@ CREATE TABLE `jobs` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `job_batches`
+-- Structure `job_batches`
 --
 
 CREATE TABLE `job_batches` (
@@ -70,7 +70,7 @@ CREATE TABLE `job_batches` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `migrations`
+-- Structure `migrations`
 --
 
 CREATE TABLE `migrations` (
@@ -82,7 +82,7 @@ CREATE TABLE `migrations` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `model_has_permissions`
+-- Structure `model_has_permissions`
 --
 
 CREATE TABLE `model_has_permissions` (
@@ -94,7 +94,7 @@ CREATE TABLE `model_has_permissions` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `model_has_roles`
+-- Structure `model_has_roles`
 --
 
 CREATE TABLE `model_has_roles` (
@@ -106,7 +106,7 @@ CREATE TABLE `model_has_roles` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `password_reset_tokens`
+-- Structure `password_reset_tokens`
 --
 
 CREATE TABLE `password_reset_tokens` (
@@ -118,7 +118,7 @@ CREATE TABLE `password_reset_tokens` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `permissions`
+-- Structure `permissions`
 --
 
 CREATE TABLE `permissions` (
@@ -132,7 +132,7 @@ CREATE TABLE `permissions` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `personal_access_tokens`
+-- Structure `personal_access_tokens`
 --
 
 CREATE TABLE `personal_access_tokens` (
@@ -151,7 +151,7 @@ CREATE TABLE `personal_access_tokens` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `plesk_webspaces`
+-- Structure `plesk_webspaces`
 --
 
 CREATE TABLE `plesk_webspaces` (
@@ -175,7 +175,7 @@ CREATE TABLE `plesk_webspaces` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `plesk_webspace_maintenances`
+-- Structure `plesk_webspace_maintenances`
 --
 
 CREATE TABLE `plesk_webspace_maintenances` (
@@ -194,7 +194,7 @@ CREATE TABLE `plesk_webspace_maintenances` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `projects`
+-- Structure `projects`
 --
 
 CREATE TABLE `projects` (
@@ -210,8 +210,48 @@ CREATE TABLE `projects` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
+
 --
--- Structure de la table `project_types`
+-- Structure `projects_statistics`
+--
+
+CREATE TABLE `projects_statistics` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `project_statistics_activation_id` bigint(20) UNSIGNED NOT NULL,
+  `invoiced_amount` varchar(255) NOT NULL,
+  `total_selling_amount_non_nf` varchar(255) NOT NULL,
+  `total_hours_amount_non_nf` varchar(255) NOT NULL,
+  `total_progress_non_nf` varchar(255) NOT NULL,
+  `total_overage_non_nf` varchar(255) NOT NULL,
+  `total_selling_amount` varchar(255) NOT NULL,
+  `total_hours_amount` varchar(255) NOT NULL,
+  `total_progress` varchar(255) NOT NULL,
+  `total_overage` varchar(255) NOT NULL,
+  `estimated_selling_amount` varchar(255) NOT NULL,
+  `estimated_delivery_date` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure `projects_statistics_activations`
+--
+
+CREATE TABLE `projects_statistics_activations` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `project_id` varchar(255) NOT NULL,
+  `psa_Number` varchar(255) NOT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure `project_types`
 --
 
 CREATE TABLE `project_types` (
@@ -221,8 +261,50 @@ CREATE TABLE `project_types` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- --------------------------------------------------------
+
 --
--- Structure de la table `teams`
+-- Structure `roles`
+--
+
+CREATE TABLE `roles` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `guard_name` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure `role_has_permissions`
+--
+
+CREATE TABLE `role_has_permissions` (
+  `permission_id` bigint(20) UNSIGNED NOT NULL,
+  `role_id` bigint(20) UNSIGNED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure `sessions`
+--
+
+CREATE TABLE `sessions` (
+  `id` varchar(255) NOT NULL,
+  `user_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `user_agent` text DEFAULT NULL,
+  `payload` longtext NOT NULL,
+  `last_activity` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure `teams`
 --
 
 CREATE TABLE `teams` (
@@ -235,7 +317,7 @@ CREATE TABLE `teams` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `team_members`
+-- Structure `team_members`
 --
 
 CREATE TABLE `team_members` (
@@ -249,7 +331,7 @@ CREATE TABLE `team_members` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `users`
+-- Structure `users`
 --
 
 CREATE TABLE `users` (
@@ -261,6 +343,38 @@ CREATE TABLE `users` (
   `email_verified_at` timestamp NULL DEFAULT NULL,
   `password` varchar(255) NOT NULL,
   `remember_token` varchar(100) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure `watchlists`
+--
+
+CREATE TABLE `watchlists` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `filter` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure `watchlist_items`
+--
+
+CREATE TABLE `watchlist_items` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `psa_Number` varchar(255) NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `psa_name` varchar(255) NOT NULL,
+  `stage` int(11) DEFAULT NULL,
+  `watchlist_id` bigint(20) UNSIGNED NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
