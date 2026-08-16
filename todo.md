@@ -6,5 +6,5 @@
 - [ ] Valider la différence entre une Vue et une Table dans le JSON
 - [x] Ajouter les liens entre les tables
 - [x] Ajouter les liens entre les colonnes (Une fois que les liens entre les tables auront été validés comme MVP)
-- [ ] Ajouter la suppression des "`" dans le nom des tables et des colonnes dans le JSON générer
-- [ ] S'assurer de la prise en charge des ALTER TABLE dans [[example_script1.sql]]
+- [x] Ajouter la suppression des "`" dans le nom des tables et des colonnes dans le JSON générer
+- [ ] S'assurer de la prise en charge des ALTER TABLE dans [[example-script1.sql]]

@@ -3,7 +3,7 @@ import json
 
 class Column:
     def __init__(self, name, dataType, attributes=None):
-        self.name = name
+        self.name = name.replace("`", "") if name else name
         self.dataType = dataType
         self.attributes = attributes
         self.referenceTable = None
@@ -41,7 +41,7 @@ class Column:
 
 class Table:
     def __init__(self, name):
-        self.name = name
+        self.name = name.replace("`", "") if name else name
         self.columns = []
     
     def add_column(self, column):
