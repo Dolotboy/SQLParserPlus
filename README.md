@@ -12,11 +12,12 @@ Don't worry about the formatting of your queries thanks to the Auto Format featu
 
 
 ## Installation
+### Dependencies
+- [Python 3.12](https://www.python.org/downloads/)
 
-Install python 3.12
-
+### Cloning Procedure
 ```bash
-
+git clone https://github.com/Dolotboy/SQLParserPlus.git
 ```
 
 ## Correct Format
@@ -25,6 +26,7 @@ Here is the format required for the script so SQLParser+ can correctly parse eve
 - (Managed By Auto Format) Each column's line for CREATE TABLE must end with a space
 - (Managed By Auto Format) DECIMAL must not have spaces between their decimal point -> DECIMAL(10,2)
 - (Managed By Auto Format) ENUM must not have spaces between their possible values -> ENUM('user','admin)
+- (Managed By Auto Format) Table's and Column's Name must not be between "`" 
   
 ## Authors
 
