@@ -6,6 +6,7 @@ from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter.filedialog import askdirectory
 import uuid
+from collections import Counter
 import sqlParser as sqlp
 
 
@@ -47,6 +48,8 @@ def main():
         "active": False,
         "save_callback": None
     }
+
+    consistent_block_size = tk.BooleanVar(value=False)
 
     # --- Fonctions de menu / fichier ---
     def load_sql(selected_file: str):
@@ -207,6 +210,10 @@ def main():
 
     options_menu = Menu(menubar, tearoff=0)
     menubar.add_cascade(label="Options", menu=options_menu)
+    options_menu.add_checkbutton(
+        label="Use Dominant Block Size",
+        variable=consistent_block_size
+    )
     
     def close_current():
         nonlocal db_model, filename, file_label_widget
@@ -218,7 +225,7 @@ def main():
         zoom_state["level"] = 1.0
         # Restore default label
         if file_label_widget:
-             file_label_widget.config(text="Aucun fichier chargé")
+             file_label_widget.config(text="No file loaded")
         print("Closed current model.")
 
     file_menu.add_command(label="Close", command=close_current)
@@ -236,7 +243,25 @@ def main():
     canvas = tk.Canvas(canvas_frame, bg="white", scrollregion=(0, 0, 2000, 2000))
     canvas.pack(fill="both", expand=True)
 
-    def draw_table_block(table, center_x, center_y, tag_id):
+    def get_dominant_block_size():
+        zoom_level = zoom_state["level"]
+        if zoom_level <= 0:
+            return None
+
+        sizes = []
+        for tag_id in uuid_to_table:
+            for item in canvas.find_withtag(tag_id):
+                if canvas.type(item) == "rectangle":
+                    x1, y1, x2, y2 = canvas.coords(item)
+                    sizes.append((
+                        round((x2 - x1) / zoom_level),
+                        round((y2 - y1) / zoom_level),
+                    ))
+                    break
+
+        return Counter(sizes).most_common(1)[0][0] if sizes else None
+
+    def draw_table_block(table, center_x, center_y, tag_id, block_size=None):
         # Calculate text size for title
         from tkinter import font as tkfont
         title_font = tkfont.Font(family="Arial", size=12, weight="bold")
@@ -285,6 +310,35 @@ def main():
         
         btn_row_h = 22 # Space for the "+" button row
         block_h = header_h + cols_h + btn_row_h
+
+        if block_size:
+            natural_block_w = block_w
+            natural_block_h = block_h
+            layout_scale_x = block_size[0] / natural_block_w
+            layout_scale_y = block_size[1] / natural_block_h
+            content_scale = min(layout_scale_x, layout_scale_y) * zoom_state["level"]
+
+            block_w, block_h = block_size
+            title_font = tkfont.Font(
+                family="Arial",
+                size=max(1, round(12 * content_scale)),
+                weight="bold",
+            )
+            col_font = tkfont.Font(
+                family="Arial",
+                size=max(1, round(10 * content_scale)),
+            )
+            title_h = title_font.metrics("linespace")
+            col_h = col_font.metrics("linespace")
+            padding_x *= layout_scale_x * zoom_state["level"]
+            padding_y *= layout_scale_y * zoom_state["level"]
+            header_h = title_h + padding_y * 2
+            cols_h = len(table.columns) * (col_h + 2 * layout_scale_y * zoom_state["level"]) + padding_y
+            btn_row_h = 22 * layout_scale_y * zoom_state["level"]
+
+        if block_size:
+            block_w *= zoom_state["level"]
+            block_h *= zoom_state["level"]
         
         x1 = center_x - block_w / 2
         y1 = center_y - block_h / 2
@@ -319,13 +373,26 @@ def main():
             
         # Draw Add Column Button (+)
         btn_size = 18
-        bx2 = x2 - 5
-        by2 = y2 - 5
+        btn_font_size = 12
+        btn_inset = 5
+        if block_size:
+            btn_size *= content_scale
+            btn_font_size = max(1, round(btn_font_size * content_scale))
+            btn_inset *= content_scale
+        bx2 = x2 - btn_inset
+        by2 = y2 - btn_inset
         bx1 = bx2 - btn_size
         by1 = by2 - btn_size
         
         canvas.create_rectangle(bx1, by1, bx2, by2, fill="#e1e1e1", outline="#999999", tags=(tag_id, "add_btn"))
-        canvas.create_text((bx1+bx2)/2, (by1+by2)/2, text="+", font=("Arial", 12, "bold"), fill="#333333", tags=(tag_id, "add_btn"))
+        canvas.create_text(
+            (bx1+bx2)/2,
+            (by1+by2)/2,
+            text="+",
+            font=("Arial", btn_font_size, "bold"),
+            fill="#333333",
+            tags=(tag_id, "add_btn"),
+        )
         
         # Draw Links associated with this block (or all links)
         # Calling draw_links() here might be expensive if many blocks move.
@@ -453,7 +520,8 @@ def main():
         center_x = table_x
         center_y = table_y
         
-        draw_table_block(target_table, center_x, center_y, tag_uuid)
+        block_size = get_dominant_block_size() if consistent_block_size.get() else None
+        draw_table_block(target_table, center_x, center_y, tag_uuid, block_size)
         draw_links()
 
 
@@ -484,7 +552,8 @@ def main():
         canvas.delete(tag_uuid)
         
         # Redraw
-        draw_table_block(table, center_x, center_y, tag_uuid)
+        block_size = get_dominant_block_size() if consistent_block_size.get() else None
+        draw_table_block(table, center_x, center_y, tag_uuid, block_size)
         draw_links()
         apply_selection_visuals()
         update_highlight()
