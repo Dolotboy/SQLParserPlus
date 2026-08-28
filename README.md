@@ -14,11 +14,28 @@ Don't worry about the formatting of your queries thanks to the Auto Format featu
 ## Installation
 ### Dependencies
 - [Python 3.12](https://www.python.org/downloads/)
+- [Venv]()
+    - ```bash
+        sudo apt install python3-venv
+        ```
+- [PIP]()
+    - ```bash
+        sudo apt install python3-pip
+        ```
+- [Tkinter]()
+    - ```bash
+        sudo apt install python3-tk
+        ```
 
 ### Cloning Procedure
 ```bash
 git clone https://github.com/Dolotboy/SQLParserPlus.git
 ```
+
+## Launch
+1. ```python3 -m venv venv```
+2. ```source venv/bin/activate```
+3. ```python3 app.pyw```
 
 ## Correct Format
 
