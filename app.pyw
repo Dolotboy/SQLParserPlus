@@ -204,6 +204,9 @@ def main():
     file_menu.add_command(label="Open...", command=select_file)
     file_menu.add_command(label="Save", command=save)
     file_menu.add_command(label="Export to SQL", command=export_to_sql)
+
+    options_menu = Menu(menubar, tearoff=0)
+    menubar.add_cascade(label="Options", menu=options_menu)
     
     def close_current():
         nonlocal db_model, filename, file_label_widget

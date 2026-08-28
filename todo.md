@@ -8,3 +8,5 @@
 - [x] Ajouter les liens entre les colonnes (Une fois que les liens entre les tables auront été validés comme MVP)
 - [x] Ajouter la suppression des "`" dans le nom des tables et des colonnes dans le JSON générer
 - [ ] S'assurer de la prise en charge des ALTER TABLE (ADD, DROP, MODIFY, RENAME) dans [[example-script1.sql]]
+- [x] Ajouter dans le menubar une cascade "Options"
+- [ ] Ajouter une option à toggle pour la grosseur des blocs. Actuellement si on crée un bloc et qu'on unzoom puis qu'on crée un deuxième bloc (Ou modifie un bloc existant comme ajouter une colonne), le deuxième bloc sera plus gros que le premier. Ce n'est pas nécessairement un comportement indésirable, mais c'est une option qu'on pourrait mettre qu'une fois coché quand on ajoute un nouveau bloc (Ou en modifie un autre) il vérifie le ratio de tous les blocs puis la ratio le plus présent ce sera celui là qui sera utilisé pour le nouveau
