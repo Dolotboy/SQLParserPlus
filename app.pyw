@@ -317,6 +317,7 @@ def main():
             layout_scale_x = block_size[0] / natural_block_w
             layout_scale_y = block_size[1] / natural_block_h
             content_scale = min(layout_scale_x, layout_scale_y) * zoom_state["level"]
+            initial_scale = min(layout_scale_x, layout_scale_y)
 
             block_w, block_h = block_size
             title_font = tkfont.Font(
@@ -339,6 +340,8 @@ def main():
         if block_size:
             block_w *= zoom_state["level"]
             block_h *= zoom_state["level"]
+        else:
+            initial_scale = 1.0 / zoom_state["level"]
         
         x1 = center_x - block_w / 2
         y1 = center_y - block_h / 2
@@ -352,7 +355,7 @@ def main():
         # Draw Title
         title_y = y1 + padding_y + title_h / 2
         canvas.create_text(center_x, title_y, text=table.name, font=title_font, 
-                           justify="center", anchor="center", tags=(tag_id, "type:title"))
+                           justify="center", anchor="center", tags=(tag_id, "type:title", f"scale:{initial_scale}"))
         
         # Draw Separator
         sep_y = y1 + header_h
@@ -367,7 +370,7 @@ def main():
             # Tag format: generic block tag, plus specific column tag to identify it
             col_tag = f"col_idx:{i}"
             cid = canvas.create_text(col_x, current_y, text=col_str, font=col_font, 
-                               anchor="nw", tags=(tag_id, col_tag, "type:column"))
+                               anchor="nw", tags=(tag_id, col_tag, "type:column", f"scale:{initial_scale}"))
             
             current_y += col_h + 2
             
@@ -391,7 +394,7 @@ def main():
             text="+",
             font=("Arial", btn_font_size, "bold"),
             fill="#333333",
-            tags=(tag_id, "add_btn"),
+            tags=(tag_id, "add_btn", "type:add_btn_text", f"scale:{initial_scale}"),
         )
         
         # Draw Links associated with this block (or all links)
@@ -1543,13 +1546,23 @@ def main():
                 canvas.yview_moveto(fy)
         
         # 6. Scale Fonts (Text sizes remain constant in scale(), so we adjust manually)
-        new_title_size = int(12 * zoom_state["level"])
-        new_col_size = int(10 * zoom_state["level"])
-        if new_title_size < 1: new_title_size = 1
-        if new_col_size < 1: new_col_size = 1
-        
-        canvas.itemconfig("type:title", font=("Arial", new_title_size, "bold"))
-        canvas.itemconfig("type:column", font=("Arial", new_col_size))
+        def update_font_size(tag_type, base_size, is_bold=False):
+            for item in canvas.find_withtag(tag_type):
+                tags = canvas.gettags(item)
+                scale = 1.0
+                for t in tags:
+                    if t.startswith("scale:"):
+                        try:
+                            scale = float(t.split(":")[1])
+                        except ValueError:
+                            pass
+                new_size = max(1, round(base_size * scale * zoom_state["level"]))
+                font_config = ("Arial", new_size, "bold") if is_bold else ("Arial", new_size)
+                canvas.itemconfig(item, font=font_config)
+
+        update_font_size("type:title", 12, True)
+        update_font_size("type:column", 10, False)
+        update_font_size("type:add_btn_text", 12, True)
 
     canvas.bind("<MouseWheel>", zoom)   # Windows / macOS
     canvas.bind("<Button-4>", zoom)     # Linux scroll up
