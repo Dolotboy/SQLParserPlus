@@ -1,4 +1,4 @@
-- [ ] Supporter le test3.sql
+- [X] Supporter le test3.sql (Maintenant devenu [[example-script9.sql]])
 - [x] Ajouter la sauvegarde des positions des blocs
 - [x] Ajouter le chargement des positions des blocs
 - [x] Ajouter le chargement d'un modèle à partir d'un JSON (json to object)
