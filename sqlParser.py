@@ -263,11 +263,17 @@ class AlterStatement:
 
         if self.alterType == "ADD FOREIGN KEY":
             # Extract concerned column, reference table, and reference column from the alter text.
-            match = re.match(r'.*FOREIGN\s+KEY\s+\(([^)]+)\)\s+REFERENCES\s+`?([\w]+)`?\s*\(([^)]+)\).*', text, re.IGNORECASE)
+            match = re.match(
+                r'.*?(?:CONSTRAINT\s+`?[A-Za-z_][\w]*`?\s+)?FOREIGN\s+KEY\s+\(([^)]+)\)\s+REFERENCES\s+`?([\w]+)`?\s*\(([^)]+)\).*',
+                text,
+                re.IGNORECASE,
+            )
             if match:
                 self.concernedColumn = self.normalize_name(match.group(1))
                 self.columnReferenceTable = self.normalize_name(match.group(2))
                 self.columnReferenceColumn = self.normalize_name(match.group(3))
+        elif self.alterType in {"ADD PRIMARY KEY", "ADD UNIQUE KEY", "ADD KEY", "ADD INDEX"}:
+            return
         elif self.alterType == "ADD":
             match = re.match(r'ADD\s+`?([\w]+)`?\s+(.+)$', text, re.IGNORECASE)
             if match:
@@ -311,7 +317,7 @@ class QueryAlterTable:
         text = text.strip()
 
         matches = list(re.finditer(
-            r'(?i)(ADD\s+FOREIGN\s+KEY|ADD\s+`?[A-Za-z_][\w]*`?|DROP\s+COLUMN|RENAME\s+COLUMN|ALTER\s+COLUMN|MODIFY\s+COLUMN|MODIFY\s+`?[A-Za-z_][\w]*`?|ALTER\s+`?[A-Za-z_][\w]*`?|RENAME\s+`?[A-Za-z_][\w]*`?)',
+            r'(?i)(ADD\s+(?:CONSTRAINT\s+`?[A-Za-z_][\w]*`?\s+)?FOREIGN\s+KEY|ADD\s+PRIMARY\s+KEY|ADD\s+UNIQUE\s+KEY|ADD\s+KEY|ADD\s+INDEX|ADD\s+`?[A-Za-z_][\w]*`?|DROP\s+COLUMN|RENAME\s+COLUMN|ALTER\s+COLUMN|MODIFY\s+COLUMN|MODIFY\s+`?[A-Za-z_][\w]*`?|ALTER\s+`?[A-Za-z_][\w]*`?|RENAME\s+`?[A-Za-z_][\w]*`?)',
             text,
         ))
 
@@ -339,8 +345,12 @@ class QueryAlterTable:
     def extract_alter_type(self, statement):
         # Define regular expressions to match alter statement types.
         alter_type_patterns = {
-            "ADD FOREIGN KEY": r'ADD\s+FOREIGN\s+KEY',
-            "ADD": r'ADD(?!\s+FOREIGN\s+KEY)',
+            "ADD FOREIGN KEY": r'ADD\s+(?:CONSTRAINT\s+`?[A-Za-z_][\w]*`?\s+)?FOREIGN\s+KEY',
+            "ADD PRIMARY KEY": r'ADD\s+PRIMARY\s+KEY',
+            "ADD UNIQUE KEY": r'ADD\s+UNIQUE\s+KEY',
+            "ADD KEY": r'ADD\s+KEY',
+            "ADD INDEX": r'ADD\s+INDEX',
+            "ADD": r'ADD(?!\s+(?:CONSTRAINT\s+)?(?:FOREIGN\s+KEY|PRIMARY\s+KEY|UNIQUE\s+KEY|KEY\b|INDEX\b))',
             "DROP COLUMN": r'DROP\s+COLUMN',
             "DROP": r'DROP\b',
             "RENAME COLUMN": r'RENAME\s+COLUMN',
@@ -511,6 +521,9 @@ class DB:
                                 if column.name == alterStatement.concernedColumn:
                                     column.referenceTable = alterStatement.columnReferenceTable
                                     column.referenceColumn = alterStatement.columnReferenceColumn
+
+                        if alterStatement.alterType in {"ADD PRIMARY KEY", "ADD UNIQUE KEY", "ADD KEY", "ADD INDEX"}:
+                            continue
 
                         if alterStatement.alterType == "ADD" and alterStatement.columnName:
                             if not any(column.name == alterStatement.columnName for column in table.columns):
