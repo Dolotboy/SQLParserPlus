@@ -168,16 +168,48 @@ class AlterStatement:
         self.concernedColumn = None
         self.columnReferenceTable = None
         self.columnReferenceColumn = None
+        self.columnName = None
+        self.newColumnName = None
+        self.newColumnType = None
         self.extract_data()
 
+    @staticmethod
+    def normalize_name(value):
+        if value is None:
+            return None
+        return value.strip().strip('`')
+
     def extract_data(self):
+        text = self.alterText.strip()
+
         if self.alterType == "ADD FOREIGN KEY":
             # Extract concerned column, reference table, and reference column from the alter text.
-            match = re.match(r'.*FOREIGN KEY\s+\((\w+)\)\s+REFERENCES\s+(\w+)\((\w+)\).*', self.alterText)
+            match = re.match(r'.*FOREIGN\s+KEY\s+\(([^)]+)\)\s+REFERENCES\s+`?([\w]+)`?\s*\(([^)]+)\).*', text, re.IGNORECASE)
             if match:
-                self.concernedColumn = match.group(1)
-                self.columnReferenceTable = match.group(2)
-                self.columnReferenceColumn = match.group(3)
+                self.concernedColumn = self.normalize_name(match.group(1))
+                self.columnReferenceTable = self.normalize_name(match.group(2))
+                self.columnReferenceColumn = self.normalize_name(match.group(3))
+        elif self.alterType == "ADD":
+            match = re.match(r'ADD\s+`?([\w]+)`?\s+(.+)$', text, re.IGNORECASE)
+            if match:
+                self.columnName = self.normalize_name(match.group(1))
+                self.newColumnType = match.group(2).strip()
+        elif self.alterType == "DROP COLUMN":
+            match = re.match(r'DROP\s+COLUMN\s+`?([\w]+)`?', text, re.IGNORECASE)
+            if match:
+                self.columnName = self.normalize_name(match.group(1))
+        elif self.alterType == "RENAME COLUMN":
+            match = re.match(r'RENAME\s+COLUMN\s+`?([\w]+)`?\s+TO\s+`?([\w]+)`?', text, re.IGNORECASE)
+            if match:
+                self.columnName = self.normalize_name(match.group(1))
+                self.newColumnName = self.normalize_name(match.group(2))
+        elif self.alterType in {"ALTER COLUMN", "MODIFY COLUMN", "MODIFY"}:
+            match = re.match(r'(?:ALTER|MODIFY)\s+COLUMN\s+`?([\w]+)`?\s+(.+)$', text, re.IGNORECASE)
+            if not match:
+                match = re.match(r'(?:ALTER|MODIFY)\s+`?([\w]+)`?\s+(.+)$', text, re.IGNORECASE)
+            if match:
+                self.columnName = self.normalize_name(match.group(1))
+                self.newColumnType = match.group(2).strip()
 
 class QueryAlterTable:
     def __init__(self, queryText):
@@ -187,38 +219,60 @@ class QueryAlterTable:
     
     def extract_data(self):
         # Extract the table name from the queryText.
-        table_match = re.match(r'ALTER\s+TABLE\s+(\w+)\s+', self.queryText)
+        table_match = re.match(r'ALTER\s+TABLE\s+`?(\w+)`?\s+', self.queryText, re.IGNORECASE)
         if table_match:
             self.table = table_match.group(1)
 
         alter_statements = []
-        statements = self.queryText.split(', ')
-        for statement in statements:
-            statement = statement.strip()
-            if statement:
-                alter_type = self.extract_alter_type(statement)
-                alter_text = self.remove_alter_table(statement)
-                alter_statements.append(AlterStatement(alter_type, alter_text))
+        if not self.table:
+            return alter_statements
+
+        text = self.queryText.strip()
+        text = re.sub(r'^ALTER\s+TABLE\s+`?' + re.escape(self.table) + r'`?\s*', '', text, flags=re.IGNORECASE)
+        text = text.strip()
+
+        matches = list(re.finditer(
+            r'(?i)(ADD\s+FOREIGN\s+KEY|ADD\s+`?[A-Za-z_][\w]*`?|DROP\s+COLUMN|RENAME\s+COLUMN|ALTER\s+COLUMN|MODIFY\s+COLUMN|MODIFY\s+`?[A-Za-z_][\w]*`?|ALTER\s+`?[A-Za-z_][\w]*`?|RENAME\s+`?[A-Za-z_][\w]*`?)',
+            text,
+        ))
+
+        if not matches:
+            if text:
+                alter_statements.append(AlterStatement(self.extract_alter_type(text), self.remove_alter_table(text)))
+            return alter_statements
+
+        for index, match in enumerate(matches):
+            start = match.start(1)
+            end = matches[index + 1].start(1) if index + 1 < len(matches) else len(text)
+            statement = text[start:end].strip(' ,\n\r')
+            if not statement:
+                continue
+            alter_type = self.extract_alter_type(statement)
+            alter_text = self.remove_alter_table(statement)
+            alter_statements.append(AlterStatement(alter_type, alter_text))
+
         return alter_statements
 
     def remove_alter_table(self, statement):
         # Remove the "ALTER TABLE (table_name)" part from the statement.
-        return re.sub(r'ALTER\s+TABLE\s+' + re.escape(self.table) + r'\s+', '', statement)
+        return re.sub(r'^ALTER\s+TABLE\s+`?' + re.escape(self.table) + r'`?\s*', '', statement, flags=re.IGNORECASE).strip()
 
     def extract_alter_type(self, statement):
         # Define regular expressions to match alter statement types.
         alter_type_patterns = {
             "ADD FOREIGN KEY": r'ADD\s+FOREIGN\s+KEY',
-            "ADD": r'ADD(?! FOREIGN KEY)',
+            "ADD": r'ADD(?!\s+FOREIGN\s+KEY)',
             "DROP COLUMN": r'DROP\s+COLUMN',
+            "DROP": r'DROP\b',
             "RENAME COLUMN": r'RENAME\s+COLUMN',
             "ALTER COLUMN": r'ALTER\s+COLUMN',
             "MODIFY COLUMN": r'MODIFY\s+COLUMN',
-            "MODIFY": r'MODIFY(?! COLUMN)'
+            "MODIFY": r'MODIFY\b',
+            "RENAME": r'RENAME\b'
         }
 
         for alter_type, pattern in alter_type_patterns.items():
-            if re.search(pattern, statement):
+            if re.search(pattern, statement, re.IGNORECASE):
                 return alter_type
 
         return "UNKNOWN"
@@ -321,19 +375,19 @@ class Script:
         return queryInstances
     
     def extract_queries_alter_table(self):
-        queries = self.scriptText.split(';')
-
         queryInstances = []
+        matches = list(re.finditer(r'ALTER\s+TABLE\s+`?[A-Za-z_][\w]*`?', self.scriptText, re.IGNORECASE))
 
-        for queryText in queries:
-            queryInstance = None
-            queryText = queryText.strip()
-            if queryText:
-                if "ALTER TABLE" in queryText:
-                    queryInstance = QueryAlterTable(queryText)
-                
-                if queryInstance:
-                    queryInstances.append(queryInstance)
+        for index, match in enumerate(matches):
+            start = match.start()
+            end = matches[index + 1].start() if index + 1 < len(matches) else len(self.scriptText)
+            queryText = self.scriptText[start:end].strip()
+            if not queryText:
+                continue
+            queryText = queryText.split(';', 1)[0].strip()
+            if queryText and 'ALTER TABLE' in queryText.upper():
+                queryInstances.append(QueryAlterTable(queryText))
+
         return queryInstances
     
     def to_json(self):
@@ -370,11 +424,28 @@ class DB:
             for table in self.tables:
                 if table.name == query.table:
                     for alterStatement in query.alterStatements:
-                        for column in table.columns:
-                            if alterStatement.concernedColumn:
+                        if alterStatement.concernedColumn:
+                            for column in table.columns:
                                 if column.name == alterStatement.concernedColumn:
                                     column.referenceTable = alterStatement.columnReferenceTable
                                     column.referenceColumn = alterStatement.columnReferenceColumn
+
+                        if alterStatement.alterType == "ADD" and alterStatement.columnName:
+                            if not any(column.name == alterStatement.columnName for column in table.columns):
+                                table.add_column(Column(alterStatement.columnName, alterStatement.newColumnType or "VARCHAR(255)", []))
+
+                        elif alterStatement.alterType in {"DROP COLUMN", "DROP"} and alterStatement.columnName:
+                            table.columns = [column for column in table.columns if column.name != alterStatement.columnName]
+
+                        elif alterStatement.alterType in {"RENAME COLUMN", "RENAME"} and alterStatement.columnName and alterStatement.newColumnName:
+                            for column in table.columns:
+                                if column.name == alterStatement.columnName:
+                                    column.name = alterStatement.newColumnName
+
+                        elif alterStatement.alterType in {"ALTER COLUMN", "MODIFY COLUMN", "MODIFY"} and alterStatement.columnName:
+                            for column in table.columns:
+                                if column.name == alterStatement.columnName:
+                                    column.dataType = alterStatement.newColumnType or column.dataType
 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
