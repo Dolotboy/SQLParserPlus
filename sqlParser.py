@@ -8,6 +8,35 @@ class Column:
         self.attributes = attributes
         self.referenceTable = None
         self.referenceColumn = None
+
+    @staticmethod
+    def split_type_and_attributes(value):
+        if value is None:
+            return None, []
+
+        tokens = re.split(r'\s+', value.strip())
+        type_tokens = []
+        attributes = []
+        seen_attribute = False
+        seen = set()
+
+        for token in tokens:
+            cleaned = token.strip().rstrip(',')
+            if not cleaned:
+                continue
+            upper = cleaned.upper()
+            if upper in {"UNSIGNED", "NOT", "NULL", "AUTO_INCREMENT", "PRIMARY", "KEY", "UNIQUE", "DEFAULT"}:
+                seen_attribute = True
+                if upper not in seen:
+                    attributes.append(upper)
+                    seen.add(upper)
+                continue
+            if seen_attribute:
+                continue
+            type_tokens.append(cleaned)
+
+        data_type = " ".join(type_tokens).strip()
+        return data_type, attributes
     
     def add_reference(self, referenceTable, referenceColumn):
         self.referenceTable = referenceTable
@@ -155,11 +184,11 @@ class QueryCreateTable:
 
         for columnDef in columnDefinitions:
             columnParts = columnDef.strip().split()
-            if len(columnParts) >= 2: 
+            if len(columnParts) >= 2:
                 columnName = columnParts[0]
-                columnType = columnParts[1]
-                columnAttributes = [part for part in columnParts[2:] if part.upper() in ["PRIMARY", "KEY", "NOT", "NULL", "AUTO_INCREMENT", "UNSIGNED"]]
-                columnInstance = Column(columnName, columnType, columnAttributes)
+                columnDefinition = " ".join(columnParts[1:]).strip()
+                columnType, columnAttributes = Column.split_type_and_attributes(columnDefinition)
+                columnInstance = Column(columnName, columnType or columnParts[1], columnAttributes)
                 tableInstance.add_column(columnInstance)
         return tableInstance
     
@@ -250,6 +279,7 @@ class AlterStatement:
         self.columnName = None
         self.newColumnName = None
         self.newColumnType = None
+        self.newColumnAttributes = []
         self.extract_data()
 
     @staticmethod
@@ -278,7 +308,7 @@ class AlterStatement:
             match = re.match(r'ADD\s+`?([\w]+)`?\s+(.+)$', text, re.IGNORECASE)
             if match:
                 self.columnName = self.normalize_name(match.group(1))
-                self.newColumnType = match.group(2).strip()
+                self.newColumnType, self.newColumnAttributes = Column.split_type_and_attributes(match.group(2).strip())
         elif self.alterType == "DROP COLUMN":
             match = re.match(r'DROP\s+COLUMN\s+`?([\w]+)`?', text, re.IGNORECASE)
             if match:
@@ -294,7 +324,7 @@ class AlterStatement:
                 match = re.match(r'(?:ALTER|MODIFY)\s+`?([\w]+)`?\s+(.+)$', text, re.IGNORECASE)
             if match:
                 self.columnName = self.normalize_name(match.group(1))
-                self.newColumnType = match.group(2).strip()
+                self.newColumnType, self.newColumnAttributes = Column.split_type_and_attributes(match.group(2).strip())
 
 class QueryAlterTable:
     def __init__(self, queryText):
@@ -527,7 +557,11 @@ class DB:
 
                         if alterStatement.alterType == "ADD" and alterStatement.columnName:
                             if not any(column.name == alterStatement.columnName for column in table.columns):
-                                table.add_column(Column(alterStatement.columnName, alterStatement.newColumnType or "VARCHAR(255)", []))
+                                table.add_column(Column(
+                                    alterStatement.columnName,
+                                    alterStatement.newColumnType or "VARCHAR(255)",
+                                    alterStatement.newColumnAttributes or [],
+                                ))
 
                         elif alterStatement.alterType in {"DROP COLUMN", "DROP"} and alterStatement.columnName:
                             table.columns = [column for column in table.columns if column.name != alterStatement.columnName]
@@ -541,6 +575,8 @@ class DB:
                             for column in table.columns:
                                 if column.name == alterStatement.columnName:
                                     column.dataType = alterStatement.newColumnType or column.dataType
+                                    if alterStatement.newColumnAttributes:
+                                        column.attributes = alterStatement.newColumnAttributes
 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
