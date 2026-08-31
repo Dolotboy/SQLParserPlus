@@ -3,7 +3,7 @@
 - [x] Ajouter le chargement des positions des blocs
 - [x] Ajouter le chargement d'un modèle à partir d'un JSON (json to object)
 - [x] Ajouter l'exportation en SQL
-- [ ] Valider la différence entre une Vue et une Table dans le JSON
+- [x] Valider la différence entre une Vue et une Table dans le JSON
 - [x] Ajouter les liens entre les tables
 - [x] Ajouter les liens entre les colonnes (Une fois que les liens entre les tables auront été validés comme MVP)
 - [x] Ajouter la suppression des "`" dans le nom des tables et des colonnes dans le JSON générer
@@ -11,3 +11,4 @@
 - [x] Ajouter dans le menubar une cascade "Options"
 - [x] Ajouter une option à toggle pour la grosseur des blocs. Actuellement si on crée un bloc et qu'on unzoom puis qu'on crée un deuxième bloc (Ou modifie un bloc existant comme ajouter une colonne), le deuxième bloc sera plus gros que le premier. Ce n'est pas nécessairement un comportement indésirable, mais c'est une option qu'on pourrait mettre qu'une fois coché quand on ajoute un nouveau bloc (Ou en modifie un autre) il vérifie le ratio de tous les blocs puis la ratio le plus présent ce sera celui là qui sera utilisé pour le nouveau
 - [x] Fixer le problème de taille des titres de tables. Lorsqu'une table plus grosse est créée et qu'on zoom ou unzoom, la grosseur du titre fait comme se "reset" pour être c'elle par défaut (et devient de la même grosseur que les titres des tables qui aurait pu être créé dès l'ouverture de l'application sans avoir touché au zoom), puis le scaling prend effet par la suite à partir de cette "valeur par défaut". Alors que le scaling devrait prendre effet à partir de la valeur de défaut de la taille des titres de tables. Des tables de grosseurs différente (Créée avec un facteur de zoom différent ne devrait jamais avoir un titre de la même taille, il devrait être proportional à son facteur de zoom initial.)
+- [ ] Ajouter l'affichage d'une vue dans un block avec des lignes de couleur pointant vers les colonnes d'origines pour visualiser le flow des données.

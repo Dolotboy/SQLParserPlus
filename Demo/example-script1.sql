@@ -107,8 +107,8 @@ amount DECIMAL(10,2) NOT NULL
 );
 
 CREATE VIEW SampleView AS
-SELECT FirstName AS FirstColumn, LastName AS SecondColumn
-FROM Employees;
+SELECT firstname AS FirstColumn, `name` AS SecondColumn
+FROM client;
 
 ALTER TABLE contract
 ADD FOREIGN KEY (user_id) REFERENCES user(id),

@@ -72,6 +72,74 @@ class Table:
             table.add_column(Column.from_dict(col_data))
         return table
 
+class ViewColumn:
+    def __init__(self, name, actualName=None, sourceTable=None):
+        self.name = name.replace("`", "") if name else name
+        self.actualName = actualName.replace("`", "") if actualName else actualName
+        self.sourceTable = sourceTable.replace("`", "") if sourceTable else sourceTable
+
+    def __str__(self):
+        if self.sourceTable and self.actualName:
+            return f"ViewColumn: {self.name} <- {self.sourceTable}.{self.actualName}"
+        return f"ViewColumn: {self.name}"
+
+    @staticmethod
+    def from_dict(data):
+        return ViewColumn(
+            name=data.get('name'),
+            actualName=data.get('actualName'),
+            sourceTable=data.get('sourceTable')
+        )
+
+class View:
+    def __init__(self, name):
+        self.name = name.replace("`", "") if name else name
+        self.columns = []
+
+    def add_column(self, column):
+        self.columns.append(column)
+
+    def __str__(self):
+        return f"View: {self.name}\nColumns: {', '.join(str(col) for col in self.columns)}"
+
+    def to_json(self):
+        return json.dumps(self, default=lambda o: o.__dict__, 
+            sort_keys=False, indent=4)
+
+    def to_sql(self):
+        if not self.columns:
+            return f"CREATE VIEW `{self.name}` AS SELECT *;"
+
+        select_items = []
+        source_tables = []
+        for col in self.columns:
+            actual_name = col.actualName or col.name
+            source_table = col.sourceTable
+            if source_table:
+                source_tables.append(source_table)
+                expr = f"`{source_table}`.`{actual_name}`"
+            else:
+                expr = f"`{actual_name}`"
+
+            if col.name and col.name != actual_name:
+                expr += f" AS `{col.name}`"
+            select_items.append(expr)
+
+        from_clause = ""
+        if source_tables:
+            unique_sources = list(dict.fromkeys(source_tables))
+            from_clause = " FROM " + ", ".join(f"`{table}`" for table in unique_sources)
+
+        return f"CREATE VIEW `{self.name}` AS\nSELECT {', '.join(select_items)}{from_clause};"
+
+    @staticmethod
+    def from_dict(data):
+        view = View(data.get('name'))
+        columns_data = data.get('columns', [])
+        for col_data in columns_data:
+            view.add_column(ViewColumn.from_dict(col_data))
+        return view
+
 class QueryCreateTable:
     def __init__(self, queryText):
         self.queryText = queryText
@@ -123,40 +191,51 @@ class QueryCreateTable:
 class QueryCreateView:
     def __init__(self, queryText):
         self.queryText = queryText
-        self.viewTable = None
+        self.view = None
         self.extract_data()
 
     def extract_data(self):
-        # Use regular expressions to extract the view name.
-        view_name_match = re.search(r'CREATE\s+VIEW\s+(\w+)', self.queryText)
-        if view_name_match:
-            view_name = view_name_match.group(1)
-            self.viewTable = Table(view_name)
+        view_name_match = re.search(r'CREATE\s+VIEW\s+`?([A-Za-z_][\w]*)`?', self.queryText, re.IGNORECASE)
+        if not view_name_match:
+            return
 
-        # Use regular expressions to extract columns from the SELECT statement.
-        select_match = re.search(r'SELECT\s+(.*?)\s+FROM', self.queryText, re.DOTALL)
-        if select_match:
-            select_clause = select_match.group(1)
-            column_strings = select_clause.split(',')
-            for column_string in column_strings:
-                column_string = column_string.strip()
-                # Check for column alias using "AS" or without it
-                alias_match = re.match(r'(\w+)(?:\.(\w+))?(?:\s+AS\s+(\w+))?', column_string)
-                if alias_match:
-                    table, column, alias = alias_match.groups()
-                    if alias:
-                        name = alias
-                    elif column:
-                        name = column
-                    else:
-                        name = table
+        view_name = view_name_match.group(1)
+        self.view = View(view_name)
 
-                    # Extract the reference table from the column (e.g., user.id)
-                    if table and column:
-                        self.viewTable.add_column(Column(name, None))
-                        self.viewTable.columns[-1].add_reference(table, column)
-                    else:
-                        self.viewTable.add_column(Column(name, None))
+        from_match = re.search(r'FROM\s+`?([A-Za-z_][\w]*)`?(?:\s+AS\s+`?([A-Za-z_][\w]*)`?)?\s*$', self.queryText, re.IGNORECASE)
+        default_source_table = from_match.group(1) if from_match else None
+
+        select_match = re.search(r'SELECT\s+(.*?)\s*(?:FROM\b|$)', self.queryText, re.DOTALL | re.IGNORECASE)
+        if not select_match:
+            return
+
+        select_clause = select_match.group(1).strip()
+        if not select_clause:
+            return
+
+        for column_string in [part.strip() for part in select_clause.split(',')]:
+            if not column_string:
+                continue
+
+            field = column_string.strip().rstrip(';')
+            field = re.sub(r'\s+', ' ', field)
+
+            alias_match = re.match(
+                r'(?:`?([A-Za-z_][\w]*)`?\.)?`?([A-Za-z_][\w]*)`?(?:\s+AS\s+`?([A-Za-z_][\w]*)`?)?$',
+                field,
+                re.IGNORECASE,
+            )
+            if not alias_match:
+                continue
+
+            source_table, actual_name, alias = alias_match.groups()
+            display_name = alias or actual_name or field
+            view_column = ViewColumn(
+                display_name,
+                actualName=actual_name or display_name,
+                sourceTable=source_table or default_source_table,
+            )
+            self.view.add_column(view_column)
     
     def __str__(self):
         return f"Query: {self.queryText}"
@@ -401,6 +480,7 @@ class Script:
 class DB:
     def __init__(self, scriptPath=None):
         self.tables = []
+        self.views = []
         if scriptPath:
             self.script = Script(scriptPath)
             self.build_model()
@@ -408,17 +488,19 @@ class DB:
             self.script = Script()
 
     def build_model(self):
-        # EXTRACT DATA FOR CREATE TABLE FIRST
+        self.tables = []
+        self.views = []
+
         queriesToProceed = self.script.queriesCreateTable.copy() 
         for query in queriesToProceed[:]: 
             self.tables.append(query.table)
-        
+
         queriesToProceed = self.script.queriesCreateView.copy() 
         for query in queriesToProceed[:]: 
-            self.tables.append(query.viewTable)
+            if query.view:
+                self.views.append(query.view)
 
         queriesToProceed = self.script.queriesAlterTable.copy() 
-        # EXTRACT DATA FOR ALTER TABLE SECOND
         for query in queriesToProceed[:]: 
             query.extract_data()
             for table in self.tables:
@@ -453,11 +535,12 @@ class DB:
 
     def to_sql(self):
         sql_parts = []
-        # Create Tables
         for table in self.tables:
             sql_parts.append(table.to_sql())
-        
-        # Add Foreign Keys via ALTER TABLE
+
+        for view in self.views:
+            sql_parts.append(view.to_sql())
+
         for table in self.tables:
             table_name = table.name.replace("`", "")
             fks = []
@@ -471,7 +554,7 @@ class DB:
                     fks.append(fk_sql)
             if fks:
                 sql_parts.append("\n".join(fks))
-        
+
         return "\n\n".join(sql_parts)
 
     @staticmethod
@@ -480,11 +563,15 @@ class DB:
         script_data = data.get('script')
         if script_data:
             db.script = Script.from_dict(script_data)
-        
+
         tables_data = data.get('tables', [])
         for table_data in tables_data:
             db.tables.append(Table.from_dict(table_data))
-            
+
+        views_data = data.get('views', [])
+        for view_data in views_data:
+            db.views.append(View.from_dict(view_data))
+
         return db
 
 def Main():
