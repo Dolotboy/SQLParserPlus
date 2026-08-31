@@ -52,6 +52,34 @@ def main():
     consistent_block_size = tk.BooleanVar(value=False)
 
     # --- Fonctions de menu / fichier ---
+    last_open_dir_path = os.path.join(os.path.expanduser("~"), ".sqlparserplus_lastdir")
+
+    def get_default_initial_dir() -> str:
+        if os.name == "nt":
+            return os.path.abspath(os.sep)
+        return os.path.expanduser("~")
+
+    def get_last_open_dir() -> str:
+        try:
+            if os.path.exists(last_open_dir_path):
+                with open(last_open_dir_path, "r", encoding="utf-8") as infile:
+                    last_dir = infile.read().strip()
+                if last_dir and os.path.isdir(last_dir):
+                    return last_dir
+        except Exception as exc:
+            print(f"Unable to read the last used directory: {exc}")
+        return get_default_initial_dir()
+
+    def save_last_open_dir(path: str):
+        try:
+            chosen_dir = os.path.dirname(path) if path else None
+            if not chosen_dir or not os.path.isdir(chosen_dir):
+                return
+            with open(last_open_dir_path, "w", encoding="utf-8") as outfile:
+                outfile.write(chosen_dir)
+        except Exception as exc:
+            print(f"Unable to save the last used directory: {exc}")
+
     def load_sql(selected_file: str):
         nonlocal db_model
         try:
@@ -116,12 +144,13 @@ def main():
 
         selected = fd.askopenfilename(
             title="Open a file",
-            initialdir="/",
+            initialdir=get_last_open_dir(),
             filetypes=filetypes,
         )
 
         if selected:
             filename = selected
+            save_last_open_dir(filename)
             if filename.lower().endswith(".sql"):
                 print("SQL File selected")
                 load_sql(filename)
