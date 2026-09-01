@@ -50,6 +50,34 @@ def main():
     }
 
     consistent_block_size = tk.BooleanVar(value=False)
+    show_views = tk.BooleanVar(value=True)
+
+    options_path = os.path.join(os.path.expanduser("~"), ".sqlparserplus_options.json")
+
+    def load_options():
+        try:
+            if os.path.exists(options_path):
+                with open(options_path, "r", encoding="utf-8") as infile:
+                    opts = json.load(infile)
+                if "consistent_block_size" in opts:
+                    consistent_block_size.set(opts["consistent_block_size"])
+                if "show_views" in opts:
+                    show_views.set(opts["show_views"])
+        except Exception as exc:
+            print(f"Unable to read options: {exc}")
+
+    def save_options(*args):
+        try:
+            opts = {
+                "consistent_block_size": consistent_block_size.get(),
+                "show_views": show_views.get()
+            }
+            with open(options_path, "w", encoding="utf-8") as outfile:
+                json.dump(opts, outfile)
+        except Exception as exc:
+            print(f"Unable to save options: {exc}")
+
+    load_options()
 
     # --- Fonctions de menu / fichier ---
     last_open_dir_path = os.path.join(os.path.expanduser("~"), ".sqlparserplus_lastdir")
@@ -241,7 +269,13 @@ def main():
     menubar.add_cascade(label="Options", menu=options_menu)
     options_menu.add_checkbutton(
         label="Use Dominant Block Size",
-        variable=consistent_block_size
+        variable=consistent_block_size,
+        command=save_options
+    )
+    options_menu.add_checkbutton(
+        label="Show Views",
+        variable=show_views,
+        command=save_options
     )
     
     def close_current():

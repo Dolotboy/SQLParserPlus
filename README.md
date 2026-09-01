@@ -149,11 +149,16 @@ It is the object used to reconstruct the database schema after reading the whole
 
 ### State Memory
 
-To improve user experience, the application remembers the last directory from which a SQL file was opened. 
-This is achieved by storing the directory path in a temporary hidden file located in the user's home directory.
+To improve user experience, the application remembers the last directory from which a SQL file was opened, as well as the UI options toggled by the user.
+This is achieved by storing data in hidden files located in the user's home directory.
+
+**Directory Memory**
 - **Path**: `~/.sqlparserplus_lastdir` (resolves to `/home/user/.sqlparserplus_lastdir` on Linux and `C:\Users\Username\.sqlparserplus_lastdir` on Windows).
 - **Behavior**: When a file is selected, its parent directory is saved to this file. On the next launch, the file dialog will automatically open in this directory.
 
+**Options Memory**
+- **Path**: `~/.sqlparserplus_options.json`
+- **Behavior**: Saves the state of UI toggles (like "Use Dominant Block Size" and "Show Views") as a JSON object, restoring them on the next launch.
 ---
 
 ## Structure (Objects)
