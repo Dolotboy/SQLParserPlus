@@ -1,0 +1,1823 @@
+{
+    "tables": [
+        {
+            "name": "item",
+            "columns": [
+                {
+                    "name": "id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL",
+                        "PRIMARY",
+                        "KEY",
+                        "AUTO_INCREMENT"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "client_id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "category_id",
+                    "dataType": "VARCHAR(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "name",
+                    "dataType": "INTEGER",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "brand",
+                    "dataType": "VARCHAR(50)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "leModele",
+                    "dataType": "INTEGER",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "serial_number",
+                    "dataType": "VARCHAR(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "bonjour",
+                    "dataType": "VARCHAR(255)",
+                    "attributes": [],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "client",
+            "columns": [
+                {
+                    "name": "id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL",
+                        "PRIMARY",
+                        "KEY",
+                        "AUTO_INCREMENT"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "client_number",
+                    "dataType": "VARCHAR(25)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "name",
+                    "dataType": "VARCHAR(50)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "firstname",
+                    "dataType": "VARCHAR(50)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "adresse",
+                    "dataType": "VARCHAR(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "birthdate",
+                    "dataType": "DATE",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "social_insurance_number",
+                    "dataType": "CHAR(9)",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "health_insurance_number",
+                    "dataType": "CHAR(12)",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "driving_license_number",
+                    "dataType": "VARCHAR(15)",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "contract",
+            "columns": [
+                {
+                    "name": "id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL",
+                        "PRIMARY",
+                        "KEY",
+                        "AUTO_INCREMENT"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "contract_number",
+                    "dataType": "VARCHAR(25)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "state",
+                    "dataType": "ENUM('open','closed')",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "user_id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": "user",
+                    "referenceColumn": "id"
+                },
+                {
+                    "name": "client_id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": "client",
+                    "referenceColumn": "id"
+                }
+            ]
+        },
+        {
+            "name": "pawned_item",
+            "columns": [
+                {
+                    "name": "id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL",
+                        "PRIMARY",
+                        "KEY",
+                        "AUTO_INCREMENT"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "contract_id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "item_id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "given_value",
+                    "dataType": "DECIMAL(10,2)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "quantity",
+                    "dataType": "INTEGER",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "physical_location",
+                    "dataType": "VARCHAR(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "comment",
+                    "dataType": "VARCHAR(255)",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "pawned_item_image",
+            "columns": [
+                {
+                    "name": "id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL",
+                        "PRIMARY",
+                        "KEY",
+                        "AUTO_INCREMENT"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "pawned_item_id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "image",
+                    "dataType": "BLOB",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "contract_extension",
+            "columns": [
+                {
+                    "name": "id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL",
+                        "PRIMARY",
+                        "KEY",
+                        "AUTO_INCREMENT"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "contract_id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "fees_amount",
+                    "dataType": "DECIMAL(10,2)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "creation_date",
+                    "dataType": "DATE",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "due_date",
+                    "dataType": "DATE",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "category",
+            "columns": [
+                {
+                    "name": "id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL",
+                        "PRIMARY",
+                        "KEY",
+                        "AUTO_INCREMENT"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "name",
+                    "dataType": "VARCHAR(20)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "description",
+                    "dataType": "VARCHAR(255)",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "user",
+            "columns": [
+                {
+                    "name": "id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL",
+                        "PRIMARY",
+                        "KEY",
+                        "AUTO_INCREMENT"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "username",
+                    "dataType": "VARCHAR(25)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "password",
+                    "dataType": "VARCHAR(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "salt",
+                    "dataType": "CHAR(16)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "role",
+                    "dataType": "ENUM('admin','user')",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "nulification",
+            "columns": [
+                {
+                    "name": "id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL",
+                        "PRIMARY",
+                        "KEY",
+                        "AUTO_INCREMENT"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "contract_id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "nulification_date",
+                    "dataType": "DATE",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "transfer",
+            "columns": [
+                {
+                    "name": "id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL",
+                        "PRIMARY",
+                        "KEY",
+                        "AUTO_INCREMENT"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "contract_id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "transfer_date",
+                    "dataType": "DATE",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "transfered_item",
+            "columns": [
+                {
+                    "name": "id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL",
+                        "PRIMARY",
+                        "KEY",
+                        "AUTO_INCREMENT"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "transfer_id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "item_id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "price",
+                    "dataType": "DECIMAL(10,2)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "sold",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "physical_location",
+                    "dataType": "VARCHAR(255)",
+                    "attributes": [
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "transfered_item_image",
+            "columns": [
+                {
+                    "name": "id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL",
+                        "PRIMARY",
+                        "KEY",
+                        "AUTO_INCREMENT"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "transfered_item_id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "image",
+                    "dataType": "BLOB",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "account",
+            "columns": [
+                {
+                    "name": "id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL",
+                        "PRIMARY",
+                        "KEY",
+                        "AUTO_INCREMENT"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "base_amount",
+                    "dataType": "DECIMAL(10,2)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        },
+        {
+            "name": "transaction",
+            "columns": [
+                {
+                    "name": "id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL",
+                        "PRIMARY",
+                        "KEY",
+                        "AUTO_INCREMENT"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "source_account_id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "target_account_id",
+                    "dataType": "BIGINT",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "amount",
+                    "dataType": "DECIMAL(10,2)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        }
+    ],
+    "views": [
+        {
+            "name": "SampleView",
+            "columns": [
+                {
+                    "name": "FirstColumn",
+                    "actualName": "firstname",
+                    "sourceTable": "client"
+                },
+                {
+                    "name": "SecondColumn",
+                    "actualName": "name",
+                    "sourceTable": "client"
+                }
+            ]
+        }
+    ],
+    "script": {
+        "scriptText": "CREATE TABLE item(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT, \nclient_id BIGINT NOT NULL, \ncategory_id BIGINT NOT NULL, \n`name` VARCHAR(50) NOT NULL, \nquantity INTEGER NOT NULL, \nbrand VARCHAR(50) NOT NULL, \nmodel VARCHAR(50) NOT NULL, \nserial_number VARCHAR(255) NOT NULL\n);\n\nCREATE TABLE client(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \nclient_number VARCHAR(25) NOT NULL,  \n`name` VARCHAR(50) NOT NULL,  \nfirstname VARCHAR(50) NOT NULL,  \nadresse VARCHAR(255) NOT NULL,  \nbirthdate DATE NOT NULL,  \nsocial_insurance_number CHAR(9) NULL,  \nhealth_insurance_number CHAR(12) NULL,  \ndriving_license_number VARCHAR(15) NULL\n);\n\nCREATE TABLE contract(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \ncontract_number VARCHAR(25) NOT NULL,  \n`state` ENUM('open','closed') NOT NULL,  \nuser_id BIGINT NOT NULL,  \nclient_id BIGINT NOT NULL\n);\n\nCREATE TABLE pawned_item(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \ncontract_id BIGINT NOT NULL,  \nitem_id BIGINT NOT NULL,  \ngiven_value DECIMAL(10,2) NOT NULL,  \nquantity INTEGER NOT NULL,  \nphysical_location VARCHAR(255) NOT NULL,  \ncomment VARCHAR(255) NULL\n);\n\nCREATE TABLE pawned_item_image(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \npawned_item_id BIGINT NOT NULL,  \n`image` BLOB NOT NULL\n);\n\nCREATE TABLE contract_extension(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \ncontract_id BIGINT NOT NULL,  \nfees_amount DECIMAL(10,2) NOT NULL,  \ncreation_date DATE NOT NULL,  \ndue_date DATE NOT NULL\n);\n\nCREATE TABLE category(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \n`name` VARCHAR(20) NOT NULL,  \n`description` VARCHAR(255) NULL\n);\n\nCREATE TABLE `user`(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \nusername VARCHAR(25) NOT NULL,  \n`password` VARCHAR(255) NOT NULL,  \nsalt CHAR(16) NOT NULL,  \n`role` ENUM('admin','user') NOT NULL\n);\n\nCREATE TABLE nulification(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \ncontract_id BIGINT NOT NULL,  \nnulification_date DATE NOT NULL\n);\n\nCREATE TABLE transfer(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \ncontract_id BIGINT NOT NULL,  \ntransfer_date DATE NOT NULL\n);\n\nCREATE TABLE transfered_item(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \ntransfer_id BIGINT NOT NULL,  \nitem_id BIGINT NOT NULL,  \nprice DECIMAL(10,2) NOT NULL,  \nsold BIGINT NOT NULL,  \nphysical_location VARCHAR(255) NULL\n);\n\nCREATE TABLE transfered_item_image(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \ntransfered_item_id BIGINT NOT NULL,  \n`image` BLOB NOT NULL\n);\n\nCREATE TABLE account(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \nbase_amount DECIMAL(10,2) NOT NULL\n);\n\nCREATE TABLE transaction(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \nsource_account_id BIGINT NOT NULL,  \ntarget_account_id BIGINT NOT NULL,  \namount DECIMAL(10,2) NOT NULL\n);\n\nCREATE VIEW SampleView AS\nSELECT firstname AS FirstColumn,  `name` AS SecondColumn\nFROM client;\n\nALTER TABLE contract\nADD FOREIGN KEY (user_id) REFERENCES user(id), \nADD FOREIGN KEY (client_id) REFERENCES client(id);\n\nALTER TABLE item\nADD bonjour VARCHAR(255);\n\nALTER TABLE item\nDROP COLUMN quantity;\n\nALTER TABLE item\nRENAME COLUMN model TO leModele\n\nALTER TABLE item\nALTER COLUMN category_id VARCHAR(255)\n\nALTER TABLE item\nMODIFY `name` INTEGER\n\nALTER TABLE item\nMODIFY COLUMN leModele INTEGER",
+        "queriesCreateTable": [
+            {
+                "queryText": "CREATE TABLE item(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT, \nclient_id BIGINT NOT NULL, \ncategory_id BIGINT NOT NULL, \n`name` VARCHAR(50) NOT NULL, \nquantity INTEGER NOT NULL, \nbrand VARCHAR(50) NOT NULL, \nmodel VARCHAR(50) NOT NULL, \nserial_number VARCHAR(255) NOT NULL\n)",
+                "table": {
+                    "name": "item",
+                    "columns": [
+                        {
+                            "name": "id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL",
+                                "PRIMARY",
+                                "KEY",
+                                "AUTO_INCREMENT"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "client_id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "category_id",
+                            "dataType": "VARCHAR(255)",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "name",
+                            "dataType": "INTEGER",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "brand",
+                            "dataType": "VARCHAR(50)",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "leModele",
+                            "dataType": "INTEGER",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "serial_number",
+                            "dataType": "VARCHAR(255)",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "bonjour",
+                            "dataType": "VARCHAR(255)",
+                            "attributes": [],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        }
+                    ]
+                }
+            },
+            {
+                "queryText": "CREATE TABLE client(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \nclient_number VARCHAR(25) NOT NULL,  \n`name` VARCHAR(50) NOT NULL,  \nfirstname VARCHAR(50) NOT NULL,  \nadresse VARCHAR(255) NOT NULL,  \nbirthdate DATE NOT NULL,  \nsocial_insurance_number CHAR(9) NULL,  \nhealth_insurance_number CHAR(12) NULL,  \ndriving_license_number VARCHAR(15) NULL\n)",
+                "table": {
+                    "name": "client",
+                    "columns": [
+                        {
+                            "name": "id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL",
+                                "PRIMARY",
+                                "KEY",
+                                "AUTO_INCREMENT"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "client_number",
+                            "dataType": "VARCHAR(25)",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "name",
+                            "dataType": "VARCHAR(50)",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "firstname",
+                            "dataType": "VARCHAR(50)",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "adresse",
+                            "dataType": "VARCHAR(255)",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "birthdate",
+                            "dataType": "DATE",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "social_insurance_number",
+                            "dataType": "CHAR(9)",
+                            "attributes": [
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "health_insurance_number",
+                            "dataType": "CHAR(12)",
+                            "attributes": [
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "driving_license_number",
+                            "dataType": "VARCHAR(15)",
+                            "attributes": [
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        }
+                    ]
+                }
+            },
+            {
+                "queryText": "CREATE TABLE contract(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \ncontract_number VARCHAR(25) NOT NULL,  \n`state` ENUM('open','closed') NOT NULL,  \nuser_id BIGINT NOT NULL,  \nclient_id BIGINT NOT NULL\n)",
+                "table": {
+                    "name": "contract",
+                    "columns": [
+                        {
+                            "name": "id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL",
+                                "PRIMARY",
+                                "KEY",
+                                "AUTO_INCREMENT"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "contract_number",
+                            "dataType": "VARCHAR(25)",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "state",
+                            "dataType": "ENUM('open','closed')",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "user_id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": "user",
+                            "referenceColumn": "id"
+                        },
+                        {
+                            "name": "client_id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": "client",
+                            "referenceColumn": "id"
+                        }
+                    ]
+                }
+            },
+            {
+                "queryText": "CREATE TABLE pawned_item(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \ncontract_id BIGINT NOT NULL,  \nitem_id BIGINT NOT NULL,  \ngiven_value DECIMAL(10,2) NOT NULL,  \nquantity INTEGER NOT NULL,  \nphysical_location VARCHAR(255) NOT NULL,  \ncomment VARCHAR(255) NULL\n)",
+                "table": {
+                    "name": "pawned_item",
+                    "columns": [
+                        {
+                            "name": "id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL",
+                                "PRIMARY",
+                                "KEY",
+                                "AUTO_INCREMENT"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "contract_id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "item_id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "given_value",
+                            "dataType": "DECIMAL(10,2)",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "quantity",
+                            "dataType": "INTEGER",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "physical_location",
+                            "dataType": "VARCHAR(255)",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "comment",
+                            "dataType": "VARCHAR(255)",
+                            "attributes": [
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        }
+                    ]
+                }
+            },
+            {
+                "queryText": "CREATE TABLE pawned_item_image(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \npawned_item_id BIGINT NOT NULL,  \n`image` BLOB NOT NULL\n)",
+                "table": {
+                    "name": "pawned_item_image",
+                    "columns": [
+                        {
+                            "name": "id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL",
+                                "PRIMARY",
+                                "KEY",
+                                "AUTO_INCREMENT"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "pawned_item_id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "image",
+                            "dataType": "BLOB",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        }
+                    ]
+                }
+            },
+            {
+                "queryText": "CREATE TABLE contract_extension(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \ncontract_id BIGINT NOT NULL,  \nfees_amount DECIMAL(10,2) NOT NULL,  \ncreation_date DATE NOT NULL,  \ndue_date DATE NOT NULL\n)",
+                "table": {
+                    "name": "contract_extension",
+                    "columns": [
+                        {
+                            "name": "id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL",
+                                "PRIMARY",
+                                "KEY",
+                                "AUTO_INCREMENT"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "contract_id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "fees_amount",
+                            "dataType": "DECIMAL(10,2)",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "creation_date",
+                            "dataType": "DATE",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "due_date",
+                            "dataType": "DATE",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        }
+                    ]
+                }
+            },
+            {
+                "queryText": "CREATE TABLE category(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \n`name` VARCHAR(20) NOT NULL,  \n`description` VARCHAR(255) NULL\n)",
+                "table": {
+                    "name": "category",
+                    "columns": [
+                        {
+                            "name": "id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL",
+                                "PRIMARY",
+                                "KEY",
+                                "AUTO_INCREMENT"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "name",
+                            "dataType": "VARCHAR(20)",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "description",
+                            "dataType": "VARCHAR(255)",
+                            "attributes": [
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        }
+                    ]
+                }
+            },
+            {
+                "queryText": "CREATE TABLE `user`(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \nusername VARCHAR(25) NOT NULL,  \n`password` VARCHAR(255) NOT NULL,  \nsalt CHAR(16) NOT NULL,  \n`role` ENUM('admin','user') NOT NULL\n)",
+                "table": {
+                    "name": "user",
+                    "columns": [
+                        {
+                            "name": "id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL",
+                                "PRIMARY",
+                                "KEY",
+                                "AUTO_INCREMENT"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "username",
+                            "dataType": "VARCHAR(25)",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "password",
+                            "dataType": "VARCHAR(255)",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "salt",
+                            "dataType": "CHAR(16)",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "role",
+                            "dataType": "ENUM('admin','user')",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        }
+                    ]
+                }
+            },
+            {
+                "queryText": "CREATE TABLE nulification(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \ncontract_id BIGINT NOT NULL,  \nnulification_date DATE NOT NULL\n)",
+                "table": {
+                    "name": "nulification",
+                    "columns": [
+                        {
+                            "name": "id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL",
+                                "PRIMARY",
+                                "KEY",
+                                "AUTO_INCREMENT"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "contract_id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "nulification_date",
+                            "dataType": "DATE",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        }
+                    ]
+                }
+            },
+            {
+                "queryText": "CREATE TABLE transfer(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \ncontract_id BIGINT NOT NULL,  \ntransfer_date DATE NOT NULL\n)",
+                "table": {
+                    "name": "transfer",
+                    "columns": [
+                        {
+                            "name": "id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL",
+                                "PRIMARY",
+                                "KEY",
+                                "AUTO_INCREMENT"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "contract_id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "transfer_date",
+                            "dataType": "DATE",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        }
+                    ]
+                }
+            },
+            {
+                "queryText": "CREATE TABLE transfered_item(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \ntransfer_id BIGINT NOT NULL,  \nitem_id BIGINT NOT NULL,  \nprice DECIMAL(10,2) NOT NULL,  \nsold BIGINT NOT NULL,  \nphysical_location VARCHAR(255) NULL\n)",
+                "table": {
+                    "name": "transfered_item",
+                    "columns": [
+                        {
+                            "name": "id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL",
+                                "PRIMARY",
+                                "KEY",
+                                "AUTO_INCREMENT"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "transfer_id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "item_id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "price",
+                            "dataType": "DECIMAL(10,2)",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "sold",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "physical_location",
+                            "dataType": "VARCHAR(255)",
+                            "attributes": [
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        }
+                    ]
+                }
+            },
+            {
+                "queryText": "CREATE TABLE transfered_item_image(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \ntransfered_item_id BIGINT NOT NULL,  \n`image` BLOB NOT NULL\n)",
+                "table": {
+                    "name": "transfered_item_image",
+                    "columns": [
+                        {
+                            "name": "id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL",
+                                "PRIMARY",
+                                "KEY",
+                                "AUTO_INCREMENT"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "transfered_item_id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "image",
+                            "dataType": "BLOB",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        }
+                    ]
+                }
+            },
+            {
+                "queryText": "CREATE TABLE account(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \nbase_amount DECIMAL(10,2) NOT NULL\n)",
+                "table": {
+                    "name": "account",
+                    "columns": [
+                        {
+                            "name": "id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL",
+                                "PRIMARY",
+                                "KEY",
+                                "AUTO_INCREMENT"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "base_amount",
+                            "dataType": "DECIMAL(10,2)",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        }
+                    ]
+                }
+            },
+            {
+                "queryText": "CREATE TABLE transaction(\nid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,  \nsource_account_id BIGINT NOT NULL,  \ntarget_account_id BIGINT NOT NULL,  \namount DECIMAL(10,2) NOT NULL\n)",
+                "table": {
+                    "name": "transaction",
+                    "columns": [
+                        {
+                            "name": "id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL",
+                                "PRIMARY",
+                                "KEY",
+                                "AUTO_INCREMENT"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "source_account_id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "target_account_id",
+                            "dataType": "BIGINT",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        },
+                        {
+                            "name": "amount",
+                            "dataType": "DECIMAL(10,2)",
+                            "attributes": [
+                                "NOT",
+                                "NULL"
+                            ],
+                            "referenceTable": null,
+                            "referenceColumn": null
+                        }
+                    ]
+                }
+            }
+        ],
+        "queriesCreateView": [
+            {
+                "queryText": "CREATE VIEW SampleView AS\nSELECT firstname AS FirstColumn,  `name` AS SecondColumn\nFROM client",
+                "view": {
+                    "name": "SampleView",
+                    "columns": [
+                        {
+                            "name": "FirstColumn",
+                            "actualName": "firstname",
+                            "sourceTable": "client"
+                        },
+                        {
+                            "name": "SecondColumn",
+                            "actualName": "name",
+                            "sourceTable": "client"
+                        }
+                    ]
+                }
+            }
+        ],
+        "queriesAlterTable": [
+            {
+                "queryText": "ALTER TABLE contract\nADD FOREIGN KEY (user_id) REFERENCES user(id), \nADD FOREIGN KEY (client_id) REFERENCES client(id)",
+                "table": "contract",
+                "alterStatements": [
+                    {
+                        "alterType": "ADD FOREIGN KEY",
+                        "alterText": "ADD FOREIGN KEY (user_id) REFERENCES user(id)",
+                        "concernedColumn": "user_id",
+                        "columnReferenceTable": "user",
+                        "columnReferenceColumn": "id",
+                        "columnName": null,
+                        "newColumnName": null,
+                        "newColumnType": null,
+                        "newColumnAttributes": []
+                    },
+                    {
+                        "alterType": "ADD FOREIGN KEY",
+                        "alterText": "ADD FOREIGN KEY (client_id) REFERENCES client(id)",
+                        "concernedColumn": "client_id",
+                        "columnReferenceTable": "client",
+                        "columnReferenceColumn": "id",
+                        "columnName": null,
+                        "newColumnName": null,
+                        "newColumnType": null,
+                        "newColumnAttributes": []
+                    }
+                ]
+            },
+            {
+                "queryText": "ALTER TABLE item\nADD bonjour VARCHAR(255)",
+                "table": "item",
+                "alterStatements": [
+                    {
+                        "alterType": "ADD",
+                        "alterText": "ADD bonjour VARCHAR(255)",
+                        "concernedColumn": null,
+                        "columnReferenceTable": null,
+                        "columnReferenceColumn": null,
+                        "columnName": "bonjour",
+                        "newColumnName": null,
+                        "newColumnType": "VARCHAR(255)",
+                        "newColumnAttributes": []
+                    }
+                ]
+            },
+            {
+                "queryText": "ALTER TABLE item\nDROP COLUMN quantity",
+                "table": "item",
+                "alterStatements": [
+                    {
+                        "alterType": "DROP COLUMN",
+                        "alterText": "DROP COLUMN quantity",
+                        "concernedColumn": null,
+                        "columnReferenceTable": null,
+                        "columnReferenceColumn": null,
+                        "columnName": "quantity",
+                        "newColumnName": null,
+                        "newColumnType": null,
+                        "newColumnAttributes": []
+                    }
+                ]
+            },
+            {
+                "queryText": "ALTER TABLE item\nRENAME COLUMN model TO leModele",
+                "table": "item",
+                "alterStatements": [
+                    {
+                        "alterType": "RENAME COLUMN",
+                        "alterText": "RENAME COLUMN model TO leModele",
+                        "concernedColumn": null,
+                        "columnReferenceTable": null,
+                        "columnReferenceColumn": null,
+                        "columnName": "model",
+                        "newColumnName": "leModele",
+                        "newColumnType": null,
+                        "newColumnAttributes": []
+                    }
+                ]
+            },
+            {
+                "queryText": "ALTER TABLE item\nALTER COLUMN category_id VARCHAR(255)",
+                "table": "item",
+                "alterStatements": [
+                    {
+                        "alterType": "ALTER COLUMN",
+                        "alterText": "ALTER COLUMN category_id VARCHAR(255)",
+                        "concernedColumn": null,
+                        "columnReferenceTable": null,
+                        "columnReferenceColumn": null,
+                        "columnName": "category_id",
+                        "newColumnName": null,
+                        "newColumnType": "VARCHAR(255)",
+                        "newColumnAttributes": []
+                    }
+                ]
+            },
+            {
+                "queryText": "ALTER TABLE item\nMODIFY `name` INTEGER",
+                "table": "item",
+                "alterStatements": [
+                    {
+                        "alterType": "MODIFY",
+                        "alterText": "MODIFY `name` INTEGER",
+                        "concernedColumn": null,
+                        "columnReferenceTable": null,
+                        "columnReferenceColumn": null,
+                        "columnName": "name",
+                        "newColumnName": null,
+                        "newColumnType": "INTEGER",
+                        "newColumnAttributes": []
+                    }
+                ]
+            },
+            {
+                "queryText": "ALTER TABLE item\nMODIFY COLUMN leModele INTEGER",
+                "table": "item",
+                "alterStatements": [
+                    {
+                        "alterType": "MODIFY COLUMN",
+                        "alterText": "MODIFY COLUMN leModele INTEGER",
+                        "concernedColumn": null,
+                        "columnReferenceTable": null,
+                        "columnReferenceColumn": null,
+                        "columnName": "leModele",
+                        "newColumnName": null,
+                        "newColumnType": "INTEGER",
+                        "newColumnAttributes": []
+                    }
+                ]
+            }
+        ]
+    },
+    "UML": [
+        {
+            "table": "item",
+            "x": 325,
+            "y": 85
+        },
+        {
+            "table": "client",
+            "x": 324,
+            "y": 85
+        },
+        {
+            "table": "contract",
+            "x": 325,
+            "y": 85
+        },
+        {
+            "table": "pawned_item",
+            "x": 325,
+            "y": 85
+        },
+        {
+            "table": "pawned_item_image",
+            "x": 325,
+            "y": 85
+        },
+        {
+            "table": "contract_extension",
+            "x": 325,
+            "y": 85
+        },
+        {
+            "table": "category",
+            "x": 324,
+            "y": 85
+        },
+        {
+            "table": "user",
+            "x": 325,
+            "y": 85
+        },
+        {
+            "table": "nulification",
+            "x": 325,
+            "y": 85
+        },
+        {
+            "table": "transfer",
+            "x": 325,
+            "y": 85
+        },
+        {
+            "table": "transfered_item",
+            "x": 324,
+            "y": 85
+        },
+        {
+            "table": "transfered_item_image",
+            "x": 325,
+            "y": 85
+        },
+        {
+            "table": "account",
+            "x": 324,
+            "y": 85
+        },
+        {
+            "table": "transaction",
+            "x": 325,
+            "y": 85
+        },
+        {
+            "table": "SampleView",
+            "x": -25,
+            "y": 51
+        }
+    ]
+}
