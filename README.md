@@ -147,6 +147,13 @@ The DB object is the final model container. It stores:
 
 It is the object used to reconstruct the database schema after reading the whole script.
 
+### State Memory
+
+To improve user experience, the application remembers the last directory from which a SQL file was opened. 
+This is achieved by storing the directory path in a temporary hidden file located in the user's home directory.
+- **Path**: `~/.sqlparserplus_lastdir` (resolves to `/home/user/.sqlparserplus_lastdir` on Linux and `C:\Users\Username\.sqlparserplus_lastdir` on Windows).
+- **Behavior**: When a file is selected, its parent directory is saved to this file. On the next launch, the file dialog will automatically open in this directory.
+
 ---
 
 ## Structure (Objects)
