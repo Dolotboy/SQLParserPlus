@@ -671,8 +671,8 @@ def main():
                         
                         if tgt_col_idx == -1: continue
                         
-                        src_pt = get_column_connection_point(u_src, i, is_source=True)
-                        tgt_pt = get_column_connection_point(u_tgt, tgt_col_idx, is_source=False)
+                        src_pt = get_column_connection_point(u_tgt, tgt_col_idx, is_source=True)
+                        tgt_pt = get_column_connection_point(u_src, i, is_source=False)
                         
                         if src_pt and tgt_pt:
                             canvas.create_line(src_pt[0], src_pt[1], tgt_pt[0], tgt_pt[1], 
