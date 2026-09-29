@@ -16,4 +16,4 @@
 - [] Ajouter le fait de pouvoir drag le coin d'un bloc pour le resize (Le contenu doit être responsive comme pour le zoom et unzoom)
 - [x] Ajouter du support pour les types ENUM dans le front
 - [x] Ajouter du support pour les UNIQUE et pour les DEFAULTS
-- [] Ajouter le possibilité de move up ou move down des colonnes (Options dans le clic droit ou bien SHIFT + Arrow)
+- [x] Ajouter le possibilité de move up ou move down des colonnes (Options dans le clic droit ou bien SHIFT + Arrow)

@@ -941,6 +941,20 @@ def main():
             redraw_block(tag)
 
     menu_column.add_command(label="Delete Column", command=on_delete_column)
+    def move_column(offset):
+        tag = ctx_menu_data["uuid"]
+        idx = ctx_menu_data["column_index"]
+        if not tag or idx is None:
+            return
+        table = uuid_to_table.get(tag)
+        target_idx = idx + offset
+        if table and 0 <= idx < len(table.columns) and 0 <= target_idx < len(table.columns):
+            table.columns[idx], table.columns[target_idx] = table.columns[target_idx], table.columns[idx]
+            ctx_menu_data["column_index"] = target_idx
+            redraw_block(tag)
+
+    menu_column.add_command(label="Move Column Up", command=lambda: move_column(-1))
+    menu_column.add_command(label="Move Column Down", command=lambda: move_column(1))
     menu_column.add_separator()
 
     def on_toggle_pk():

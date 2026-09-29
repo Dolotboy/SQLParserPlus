@@ -1,0 +1,47 @@
+{
+    "tables": [
+        {
+            "name": "Table_Name",
+            "columns": [
+                {
+                    "name": "new_colawdawdawdawdawdawdadw",
+                    "dataType": "VARCHAR(255)",
+                    "attributes": [],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "new_colawd",
+                    "dataType": "VARCHAR(255)",
+                    "attributes": [
+                        "NOT",
+                        "NULL"
+                    ],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                },
+                {
+                    "name": "new_colawdawdawd",
+                    "dataType": "VARCHAR(255)",
+                    "attributes": [],
+                    "referenceTable": null,
+                    "referenceColumn": null
+                }
+            ]
+        }
+    ],
+    "views": [],
+    "script": {
+        "scriptText": "",
+        "queriesCreateTable": [],
+        "queriesCreateView": [],
+        "queriesAlterTable": []
+    },
+    "UML": [
+        {
+            "table": "Table_Name",
+            "x": 325,
+            "y": 85
+        }
+    ]
+}
