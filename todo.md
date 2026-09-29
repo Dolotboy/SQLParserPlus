@@ -14,6 +14,6 @@
 - [x] Bind à l'option "Show Views", ajouter l'affichage des vues dans des blocks avec une couleur de fond "lightblue" pour les différencier des tables. Dans les vues, les noms "AS" des colonnes doivent apparaître s'il y en a. Les colonnes doivent être reliées à leurs tables d'origines avec des lignes de couleur verte pointant vers les colonnes d'origines pour visualiser le flow des données. Lorsque l'option des décochée, les vues doivent être masquées et vice versa.
 - [x] Corriger le fait que les liens sont à l'envers dans l'interface. Les clés foreigns doivent être créé à partir de la foreign ex: à partir de user_id et non à partir de user->id. Cependant les lignes sont à l'envers, elle part de user_id et entre dans user->id, alors qu'elle devrait partir de user->id et entrer dans user_id
 - [] Ajouter le fait de pouvoir drag le coin d'un bloc pour le resize (Le contenu doit être responsive comme pour le zoom et unzoom)
-- [] Ajouter du support pour les types ENUM dans le front
-- [] Ajouter du support pour les UNIQUE et pour les DEFAULTS
+- [x] Ajouter du support pour les types ENUM dans le front
+- [x] Ajouter du support pour les UNIQUE et pour les DEFAULTS
 - [] Ajouter le possibilité de move up ou move down des colonnes (Options dans le clic droit ou bien SHIFT + Arrow)

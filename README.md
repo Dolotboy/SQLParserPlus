@@ -34,11 +34,26 @@ git clone https://github.com/Dolotboy/SQLParserPlus.git
 ```
 
 ## Launch
+### Linux
 1. ```bash
    python3 -m venv venv
    ```
 2. ```bash
    source venv/bin/activate
+   ```
+3. ```bash
+   python3 app.pyw
+   ```
+### Windows
+On the first launch, run this command:
+```bash
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+1. ```bash
+   python3 -m venv venv
+   ```
+2. ```bash
+   .\venv\Scripts\Activate.ps1
    ```
 3. ```bash
    python3 app.pyw

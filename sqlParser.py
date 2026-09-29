@@ -4,8 +4,13 @@ import json
 class Column:
     def __init__(self, name, dataType, attributes=None):
         self.name = name.replace("`", "") if name else name
-        self.dataType = dataType
-        self.attributes = attributes
+        # Older editor versions could save canvas badges into dataType. Strip
+        # those display-only suffixes when loading old JSON/model data.
+        self.dataType = re.sub(r'(?:\s*\[(?:PK|NN|AI|UQ|DEFAULT[^\]]*)\])+$', '', dataType or '', flags=re.IGNORECASE) or dataType
+        self.attributes = list(attributes or [])
+        seen = set()
+        self.attributes = [attribute for attribute in self.attributes
+                           if not (str(attribute).upper() in seen or seen.add(str(attribute).upper()))]
         self.referenceTable = None
         self.referenceColumn = None
 
@@ -14,28 +19,51 @@ class Column:
         if value is None:
             return None, []
 
-        tokens = re.split(r'\s+', value.strip())
-        type_tokens = []
+        value = value.strip()
+        depth, quote, escaped, attribute_start = 0, None, False, None
+        keywords = {"UNSIGNED", "NOT", "NULL", "AUTO_INCREMENT", "PRIMARY", "UNIQUE", "DEFAULT"}
+        for match in re.finditer(r'\S+', value):
+            token = match.group(0)
+            if depth == 0 and quote is None and token.upper() in keywords:
+                attribute_start = match.start()
+                break
+            for char in token:
+                if escaped:
+                    escaped = False
+                elif char == "\\" and quote:
+                    escaped = True
+                elif quote:
+                    if char == quote:
+                        quote = None
+                elif char in ("'", '"', '`'):
+                    quote = char
+                elif char == "(":
+                    depth += 1
+                elif char == ")":
+                    depth = max(0, depth - 1)
+        data_type = value[:attribute_start].strip() if attribute_start is not None else value
+        suffix = value[attribute_start:].strip() if attribute_start is not None else ""
+        matches = list(re.finditer(r'\b(UNSIGNED|NOT\s+NULL|NULL|AUTO_INCREMENT|PRIMARY\s+KEY|UNIQUE|DEFAULT)\b', suffix, re.IGNORECASE))
         attributes = []
-        seen_attribute = False
-        seen = set()
-
-        for token in tokens:
-            cleaned = token.strip().rstrip(',')
-            if not cleaned:
+        for index, match in enumerate(matches):
+            keyword = re.sub(r'\s+', ' ', match.group(1).upper())
+            if keyword == "NULL" and attributes and attributes[-1].upper() == "DEFAULT NULL":
                 continue
-            upper = cleaned.upper()
-            if upper in {"UNSIGNED", "NOT", "NULL", "AUTO_INCREMENT", "PRIMARY", "KEY", "UNIQUE", "DEFAULT"}:
-                seen_attribute = True
-                if upper not in seen:
-                    attributes.append(upper)
-                    seen.add(upper)
-                continue
-            if seen_attribute:
-                continue
-            type_tokens.append(cleaned)
-
-        data_type = " ".join(type_tokens).strip()
+            end = matches[index + 1].start() if index + 1 < len(matches) else len(suffix)
+            clause = suffix[match.start():end].strip().rstrip(',')
+            if keyword == "DEFAULT":
+                expression = clause[len(match.group(1)):].strip()
+                # NULL belongs to DEFAULT NULL, not a second column attribute.
+                if expression.upper() == "NULL":
+                    attributes.append("DEFAULT NULL")
+                else:
+                    attributes.append("DEFAULT" + (" " + expression if expression else ""))
+            elif keyword == "NOT NULL":
+                attributes.extend(["NOT", "NULL"])
+            elif keyword == "PRIMARY KEY":
+                attributes.extend(["PRIMARY", "KEY"])
+            else:
+                attributes.append(keyword)
         return data_type, attributes
     
     def add_reference(self, referenceTable, referenceColumn):
@@ -180,13 +208,13 @@ class QueryCreateTable:
         tableInstance = Table(tableName)
 
         columnText = self.queryText[createStart + 1: -1]
-        columnDefinitions = [part.strip() for part in columnText.split(", ")]
+        columnDefinitions = self.extract_column_definitions(columnText)
 
         for columnDef in columnDefinitions:
-            columnParts = columnDef.strip().split()
+            columnParts = columnDef.strip().split(None, 1)
             if len(columnParts) >= 2:
                 columnName = columnParts[0]
-                columnDefinition = " ".join(columnParts[1:]).strip()
+                columnDefinition = columnParts[1].strip()
                 columnType, columnAttributes = Column.split_type_and_attributes(columnDefinition)
                 columnInstance = Column(columnName, columnType or columnParts[1], columnAttributes)
                 tableInstance.add_column(columnInstance)
@@ -196,16 +224,27 @@ class QueryCreateTable:
         columnDefinitions = []
         currentColumn = ""
         openParentheses = 0
+        quote = None
+        escaped = False
 
         for char in columnText:
-            if char == '(':
+            if escaped:
+                escaped = False
+            elif char == "\\" and quote:
+                escaped = True
+            elif quote:
+                if char == quote:
+                    quote = None
+            elif char in ("'", '"', '`'):
+                quote = char
+            elif char == '(':
                 openParentheses += 1
             elif char == ')':
                 openParentheses -= 1
             
             currentColumn += char
 
-            if openParentheses == 0 and char == ',':
+            if openParentheses == 0 and quote is None and char == ',':
                 columnDefinitions.append(currentColumn.strip())
                 currentColumn = ""
 

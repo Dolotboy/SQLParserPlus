@@ -373,6 +373,9 @@ def main():
                 if "PRIMARY" in attrs_upper: attr_text += "[PK]"
                 if "NOT" in attrs_upper and "NULL" in attrs_upper: attr_text += "[NN]"
                 if "AUTO_INCREMENT" in attrs_upper: attr_text += "[AI]"
+                if "UNIQUE" in attrs_upper: attr_text += "[UQ]"
+                default_attr = next((a for a in col.attributes if a.upper().startswith("DEFAULT")), None)
+                if default_attr: attr_text += f"[{default_attr}]"
             
             col_str = f"{col.name} : {col.dataType}" if col.dataType else col.name
             if attr_text:
@@ -1577,18 +1580,13 @@ def main():
              widget_main = entry
              
         elif col_index is not None:
-             # Parse current text "Name : Type"
-             col_name_val = ""
-             col_type_val = ""
-             if ":" in current_text:
-                 parts = current_text.split(":")
-                 col_name_val = parts[0].strip()
-                 if len(parts) > 1: result_type = parts[1].strip()
-                 # But wait, original code constructed it as f"{col.name} : {col.dataType}"
-                 # So we can trust that structure mostly.
-                 col_type_val = parts[1].strip() if len(parts)>1 else ""
-             else:
-                 col_name_val = current_text
+             # Read editable values from the model, not canvas text: canvas text
+             # also contains attribute badges such as [PK] and [NN].
+             if not (0 <= col_index < len(table.columns)):
+                 return
+             col = table.columns[col_index]
+             col_name_val = col.name or ""
+             col_type_val = col.dataType or ""
             
              # Create Frame
              container = tk.Frame(canvas, bg="white")
@@ -1599,22 +1597,28 @@ def main():
              name_entry.pack(side="left", padx=1)
              
              # Type Combobox
-             common_types = ["INTEGER", "VARCHAR(255)", "TEXT", "BOOLEAN", "DATE", "DATETIME", "FLOAT", "DOUBLE", "BLOB", "SERIAL"]
+             common_types = ["INTEGER", "VARCHAR(255)", "TEXT", "BOOLEAN", "DATE", "DATETIME", "FLOAT", "DOUBLE", "BLOB", "SERIAL", "ENUM('value1','value2')"]
              type_combo = ttk.Combobox(container, values=common_types, width=12)
              type_combo.set(col_type_val)
              type_combo.pack(side="left", padx=1)
              
              # Attributes Checkbuttons
-             col = table.columns[col_index]
              attrs_upper = [a.upper() for a in col.attributes] if col.attributes else []
              
              pk_var = tk.BooleanVar(value="PRIMARY" in attrs_upper)
              nn_var = tk.BooleanVar(value="NOT" in attrs_upper and "NULL" in attrs_upper)
              ai_var = tk.BooleanVar(value="AUTO_INCREMENT" in attrs_upper)
+             unique_var = tk.BooleanVar(value="UNIQUE" in attrs_upper)
+             attributes = col.attributes or []
+             default_value = next((a[7:].strip() for a in attributes if a.upper().startswith("DEFAULT")), "")
+             default_entry = tk.Entry(container, width=10, highlightthickness=1, relief="solid")
+             default_entry.insert(0, default_value)
              
              tk.Checkbutton(container, text="PK", variable=pk_var, bg="white").pack(side="left", padx=1)
              tk.Checkbutton(container, text="NN", variable=nn_var, bg="white").pack(side="left", padx=1)
              tk.Checkbutton(container, text="AI", variable=ai_var, bg="white").pack(side="left", padx=1)
+             tk.Checkbutton(container, text="UQ", variable=unique_var, bg="white").pack(side="left", padx=1)
+             default_entry.pack(side="left", padx=1)
              
              name_entry.focus_force()
              
@@ -1626,6 +1630,8 @@ def main():
              widget_main = name_entry # For binding? Bind to both?
         
         def save_edit(event=None):
+            if not edit_state["active"]:
+                return
             if is_title and entry:
                 new_text = entry.get()
                 table.name = new_text
@@ -1644,11 +1650,19 @@ def main():
                     if pk_var.get(): new_attrs.extend(["PRIMARY", "KEY"])
                     if nn_var.get(): new_attrs.extend(["NOT", "NULL"])
                     if ai_var.get(): new_attrs.append("AUTO_INCREMENT")
+                    if unique_var.get(): new_attrs.append("UNIQUE")
+                    if default_entry.get().strip():
+                        default_value = default_entry.get().strip()
+                        new_attrs.append("DEFAULT" + (" " + default_value if not default_value.upper().startswith("DEFAULT") else " " + default_value[7:].strip()))
                     col.attributes = new_attrs
             
             canvas.delete(window_id)
             edit_state["active"] = False
             edit_state["save_callback"] = None
+            if container:
+                container.destroy()
+            elif entry:
+                entry.destroy()
             redraw_block(uuid_tag)
             canvas.focus_set()
 
@@ -1656,6 +1670,10 @@ def main():
             canvas.delete(window_id)
             edit_state["active"] = False
             edit_state["save_callback"] = None
+            if container:
+                container.destroy()
+            elif entry:
+                entry.destroy()
             canvas.focus_set()
         
         # Register callback for auto-save
@@ -1675,9 +1693,11 @@ def main():
             # User must press Return to save.
             
             type_combo.bind("<Return>", save_edit)
+            default_entry.bind("<Return>", save_edit)
             
             name_entry.bind("<Escape>", cancel_edit)
             type_combo.bind("<Escape>", cancel_edit)
+            default_entry.bind("<Escape>", cancel_edit)
 
     def on_double_click(event):
         # Find item closest to click, corrected for scroll/zoom
