@@ -59,6 +59,17 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
    python3 app.pyw
    ```
 
+## Build
+
+From the repository root, install PyInstaller and build the application:
+
+```bash
+pip install pyinstaller
+pyinstaller --onefile --noconsole app.pyw
+```
+
+The generated executable is placed in the `dist/` directory.
+
 ## Tests
 
 Run all unit tests from the repository root with:
