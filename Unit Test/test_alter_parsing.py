@@ -5,7 +5,7 @@ from sqlParser import DB
 
 class AlterParsingRegressionTests(unittest.TestCase):
     def test_add_constraint_and_primary_key_are_not_treated_as_columns(self):
-        db = DB('test3.sql')
+        db = DB('Demo/test3.sql')
 
         for table in db.tables:
             bad_names = [

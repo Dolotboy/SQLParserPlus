@@ -24,6 +24,7 @@ def main():
     
     # Mapping visual blocks UUID -> Table object
     uuid_to_table = {}
+    custom_block_sizes = {}
     
     # Context menu state
     ctx_menu_data = {"uuid": None, "column_index": None, "link_tag": None}
@@ -151,21 +152,28 @@ def main():
             uml_map = {}
             if hasattr(db_model, "UML") and db_model.UML:
                 for item in db_model.UML:
-                    uml_map[item.get("table")] = (item.get("x"), item.get("y"))
+                    uml_map[item.get("table")] = (
+                        item.get("x"),
+                        item.get("y"),
+                        item.get("width"),
+                        item.get("height"),
+                    )
 
             for table in db_model.tables:
                 print(f"Table : {table.name}")
                 if table.name in uml_map:
-                    x, y = uml_map[table.name]
-                    add_table_block(table.name, table_x=x, table_y=y, add_to_model=False)
+                    x, y, width, height = uml_map[table.name]
+                    size = (width, height) if width and height else None
+                    add_table_block(table.name, table_x=x, table_y=y, add_to_model=False, block_size=size)
                 else:
                     add_table_block(table.name, add_to_model=False)
             
             for view in db_model.views:
                 print(f"View : {view.name}")
                 if view.name in uml_map:
-                    x, y = uml_map[view.name]
-                    add_view_block(view.name, view_x=x, view_y=y, add_to_model=False)
+                    x, y, width, height = uml_map[view.name]
+                    size = (width, height) if width and height else None
+                    add_view_block(view.name, view_x=x, view_y=y, add_to_model=False, block_size=size)
                 else:
                     add_view_block(view.name, add_to_model=False)
         
@@ -216,16 +224,21 @@ def main():
         uml_data = []
         for tag, table_or_view in uuid_to_table.items():
             # Get visual bounds
-            bbox = canvas.bbox(tag)
-            if bbox:
-                x1, y1, x2, y2 = bbox
+            rect_item = next(
+                (item for item in canvas.find_withtag(tag) if canvas.type(item) == "rectangle"),
+                None,
+            )
+            if rect_item:
+                x1, y1, x2, y2 = canvas.coords(rect_item)
                 center_x = (x1 + x2) / 2
                 center_y = (y1 + y2) / 2
                 
                 uml_entry = {
                     "table": table_or_view.name,
                     "x": int(center_x / zoom_state["level"]),
-                    "y": int(center_y / zoom_state["level"])
+                    "y": int(center_y / zoom_state["level"]),
+                    "width": int((x2 - x1) / zoom_state["level"]),
+                    "height": int((y2 - y1) / zoom_state["level"]),
                 }
                 uml_data.append(uml_entry)
 
@@ -349,6 +362,19 @@ def main():
                     break
 
         return Counter(sizes).most_common(1)[0][0] if sizes else None
+
+    def draw_resize_handle(x2, y2, tag_id, state="normal", extra_tags=()):
+        handle_size = 8 * zoom_state["level"]
+        canvas.create_rectangle(
+            x2 - handle_size,
+            y2 - handle_size,
+            x2,
+            y2,
+            fill="#555555",
+            outline="white",
+            tags=(tag_id, "resize_handle", *extra_tags),
+            state=state,
+        )
 
     def draw_table_block(table, center_x, center_y, tag_id, block_size=None):
         # Calculate text size for title
@@ -488,6 +514,7 @@ def main():
             fill="#333333",
             tags=(tag_id, "add_btn", "type:add_btn_text", f"scale:{initial_scale}"),
         )
+        draw_resize_handle(x2, y2, tag_id)
         
         # Draw Links associated with this block (or all links)
         # Calling draw_links() here might be expensive if many blocks move.
@@ -583,6 +610,8 @@ def main():
             cid = canvas.create_text(col_x, current_y, text=col_str, font=col_font, 
                                anchor="nw", tags=(tag_id, col_tag, "type:view", "type:column", f"scale:{initial_scale}"), state=state)
             current_y += col_h + 2
+
+        draw_resize_handle(x2, y2, tag_id, state, ("type:view",))
 
     def get_column_connection_point(block_uuid, col_idx, is_source=True):
         # Find the rectangle
@@ -683,7 +712,7 @@ def main():
                                                tags=("link_line", f"link_src_{u_src}_{i}"))
 
 
-    def add_table_block(table_name: str = "Table_Name", table_x: int = 325, table_y: int = 85, add_to_model: bool = True):
+    def add_table_block(table_name: str = "Table_Name", table_x: int = 325, table_y: int = 85, add_to_model: bool = True, block_size=None):
         nonlocal db_model
         if db_model is None:
             db_model = sqlp.DB()
@@ -714,13 +743,15 @@ def main():
         center_x = table_x
         center_y = table_y
         
-        block_size = get_dominant_block_size() if consistent_block_size.get() else None
+        block_size = block_size or (get_dominant_block_size() if consistent_block_size.get() else None)
+        if block_size:
+            custom_block_sizes[tag_uuid] = block_size
         draw_table_block(target_table, center_x, center_y, tag_uuid, block_size)
         draw_links()
 
 
     
-    def add_view_block(view_name: str, view_x: int = 325, view_y: int = 85, add_to_model: bool = True):
+    def add_view_block(view_name: str, view_x: int = 325, view_y: int = 85, add_to_model: bool = True, block_size=None):
         nonlocal db_model
         if db_model is None:
             db_model = sqlp.DB()
@@ -744,7 +775,9 @@ def main():
         center_x = view_x
         center_y = view_y
         
-        block_size = get_dominant_block_size() if consistent_block_size.get() else None
+        block_size = block_size or (get_dominant_block_size() if consistent_block_size.get() else None)
+        if block_size:
+            custom_block_sizes[tag_uuid] = block_size
         draw_view_block(target_view, center_x, center_y, tag_uuid, block_size)
         draw_links()
 
@@ -767,13 +800,18 @@ def main():
             block_w = coords[2] - coords[0]
             block_h = coords[3] - coords[1]
             zoom_level = zoom_state["level"]
-            block_size = (round(block_w / zoom_level), round(block_h / zoom_level)) if consistent_block_size.get() else None
+            block_size = custom_block_sizes.get(tag_uuid)
+            if block_size is None and consistent_block_size.get():
+                block_size = (round(block_w / zoom_level), round(block_h / zoom_level))
         else:
             center_x = 325
             center_y = 85
             block_size = get_dominant_block_size() if consistent_block_size.get() else None
             
         canvas.delete(tag_uuid)
+
+        if block_size:
+            custom_block_sizes[tag_uuid] = block_size
         
         if isinstance(table, sqlp.View):
             draw_view_block(table, center_x, center_y, tag_uuid, block_size)
@@ -1218,9 +1256,8 @@ def main():
     resize_state = {
         "active": False,
         "selected_block_tag": None,
-        "active": False,
-        "selected_block_tag": None,
-        "original_outline": "black" # Default, will be captured
+        "origin_x": None,
+        "origin_y": None,
     }
     
     # Zoom State
@@ -1357,189 +1394,104 @@ def main():
                 break
         
         if group_tag:
-            # If we select a DIFFERENT block, we should reset resize mode on the OLD one if it was active?
-            # Or just switch selection.
-            # Per plan: "Reset resize mode when clicking a new block" seems safest to avoid confusion.
-            if resize_state["selected_block_tag"] and resize_state["selected_block_tag"] != group_tag:
-                # If the old one was in resize mode, turn it off visually
-                if resize_state["active"]:
-                     # Revert appearance of old block
-                     old_items = canvas.find_withtag(resize_state["selected_block_tag"])
-                     for i in old_items:
-                         if canvas.type(i) == 'rectangle':
-                             canvas.itemconfig(i, outline=resize_state["original_outline"], width=1)
-                     resize_state["active"] = False
-
             resize_state["selected_block_tag"] = group_tag
-            # We don't automatically enter resize mode here, just track selection.
-
-    def toggle_resize_mode(event=None):
-        if not resize_state["selected_block_tag"]:
-            return
-            
-        group_tag = resize_state["selected_block_tag"]
-        # Find the rectangle item in this group to change border
-        items = canvas.find_withtag(group_tag)
-        rect_item = None
-        text_item = None
-        for item in items:
-            if canvas.type(item) == 'rectangle':
-                rect_item = item
-            elif canvas.type(item) == 'text':
-                text_item = item
-        
-        if not rect_item:
-            return
-
-        resize_state["active"] = not resize_state["active"]
-        
-        if resize_state["active"]:
-            # Enable resize mode: Blue border
-            # Capture original color first just in case (though we assume black/default mostly)
-            resize_state["original_outline"] = canvas.itemcget(rect_item, "outline")
-            canvas.itemconfig(rect_item, outline="blue", width=3)
-            print(f"Resize Mode ON for {group_tag}")
-        else:
-            # Disable resize mode: Restore
-            canvas.itemconfig(rect_item, outline=resize_state["original_outline"], width=1)
-            print(f"Resize Mode OFF for {group_tag}")
-            
-            # Recenter text horizontally
-            if text_item:
-                x1, y1, x2, y2 = canvas.coords(rect_item)
-                center_x = (x1 + x2) / 2
-                # Get current text coords
-                text_coords = canvas.coords(text_item)
-                # Text coords: [x, y]. We only change x.
-                canvas.coords(text_item, center_x, text_coords[1])
+            if "resize_handle" in tags:
+                rect_item = next(
+                    (item_id for item_id in canvas.find_withtag(group_tag)
+                     if canvas.type(item_id) == "rectangle" and "type:table_bg" in canvas.gettags(item_id)),
+                    None,
+                )
+                if rect_item:
+                    rect_x1, rect_y1, _, _ = canvas.coords(rect_item)
+                    resize_state["active"] = True
+                    resize_state["origin_x"] = rect_x1
+                    resize_state["origin_y"] = rect_y1
+                    canvas.configure(cursor="bottom_right_corner")
 
 
     def on_drag(event):
-        if drag_data["item"]:
-            dx = event.x - drag_data["x"]
-            dy = event.y - drag_data["y"]
-            
-            # Identify the group tag if it exists
-            tags = canvas.gettags(drag_data["item"])
-            group_tag = None
-            for tag in tags:
-                if tag.startswith("uml_block"):
-                    group_tag = tag
-                    break
-            
-            # RESIZE LOGIC
-            if resize_state["active"] and resize_state["selected_block_tag"] == group_tag:
-                 # We are resizing the SELECTED group
-                 # We need to find the rectangle to resize it
-                 # And maybe the text to center it? Or just leave text?
-                 # Requirement: "redimensionner" - implies updating the rectangle.
-                 
-                 items_in_group = canvas.find_withtag(group_tag)
-                 for item in items_in_group:
-                     if canvas.type(item) == 'rectangle':
-                         # Get coords
-                         x1, y1, x2, y2 = canvas.coords(item)
-                         # Simple resize: Dragging anywhere adds dx to x2 and dy to y2 (bottom-right resize)
-                         # Or we could be smarter depending on where they clicked, but user asked for "drag and drop" style
-                         # usually implying dragging the object itself in a specific mode.
-                         # Let's just adjust width/height by dx/dy.
-                         
-                         # Minimum size check
-                         new_x2 = x2 + dx
-                         new_y2 = y2 + dy
-                         if new_x2 - x1 < 20: new_x2 = x1 + 20
-                         if new_y2 - y1 < 20: new_y2 = y1 + 20
-                         
-                         canvas.coords(item, x1, y1, new_x2, new_y2)
-                         
-                         # Update center text if desired? 
-                         # Usually text stays centered or top-left.
-                         # Let's re-center text if strict center is preferred, 
-                         # OR just let it wrap if it was elaborate.
-                         # The text item is separate.
-                     elif canvas.type(item) == 'text':
-                         # Optional: realign text?
-                         # Current impl: text is just placed at specific coord.
-                         # If we want it to stay centered:
-                         # We need to know the new rect center.
-                         pass
-                 
-                 # Don't move the items, just resized the rect.
-                 # What about text position? If we only resize rect, text might separate visually.
-                 # Let's simple-move text relative to resize? No, usually text is content.
-                 # Let's keep text in place for now, or maybe it should be anchored.
-            
-            # MOVE LOGIC (Standard)
+        if resize_state["active"]:
+            group_tag = resize_state["selected_block_tag"]
+            pointer_x = canvas.canvasx(event.x)
+            pointer_y = canvas.canvasy(event.y)
+            zoom_level = zoom_state["level"]
+            block_width = max(60, (pointer_x - resize_state["origin_x"]) / zoom_level)
+            block_height = max(40, (pointer_y - resize_state["origin_y"]) / zoom_level)
+            custom_block_sizes[group_tag] = (block_width, block_height)
+            center_x = resize_state["origin_x"] + block_width * zoom_level / 2
+            center_y = resize_state["origin_y"] + block_height * zoom_level / 2
+            canvas.delete(group_tag)
+            table = uuid_to_table[group_tag]
+            if isinstance(table, sqlp.View):
+                draw_view_block(table, center_x, center_y, group_tag, custom_block_sizes[group_tag])
             else:
-                if group_tag:
-                     canvas.move(group_tag, dx, dy)
-                else:
-                    canvas.move(drag_data["item"], dx, dy)
-            
-            drag_data["x"], drag_data["y"] = event.x, event.y
-            
-            # Update links during drag (could be optimized)
+                draw_table_block(table, center_x, center_y, group_tag, custom_block_sizes[group_tag])
             draw_links()
+            apply_selection_visuals()
+            drag_data["x"], drag_data["y"] = event.x, event.y
+            return
+
+        if not drag_data["item"]:
+            return
+
+        dx = event.x - drag_data["x"]
+        dy = event.y - drag_data["y"]
+        tags = canvas.gettags(drag_data["item"])
+        group_tag = next((tag for tag in tags if tag.startswith("uml_block")), None)
+        if group_tag:
+            canvas.move(group_tag, dx, dy)
+        else:
+            canvas.move(drag_data["item"], dx, dy)
+        drag_data["x"], drag_data["y"] = event.x, event.y
+        draw_links()
 
     def on_mouse_move(event):
-        if link_creation["active"] and link_creation["line_id"]:
+        if not resize_state["active"]:
             cx = canvas.canvasx(event.x)
             cy = canvas.canvasy(event.y)
-            coords = canvas.coords(link_creation["line_id"])
-            # coords is [x1, y1, x2, y2]. Update x2, y2
-            canvas.coords(link_creation["line_id"], coords[0], coords[1], cx, cy)
-            
-            # Target Indicator Logic
-            # Find closest item under mouse same way as click
-            items = canvas.find_overlapping(cx-1, cy-1, cx+1, cy+1)
-            target_uuid = None
-            target_col_idx = None
-            
-            for item in items:
-                tags = canvas.gettags(item)
-                is_col = False
-                blk = None
-                for t in tags:
-                     if t.startswith("col_idx:"):
-                         is_col = True
-                     if t.startswith("uml_block_"):
-                         blk = t
-                if is_col and blk:
-                     # Check if it's the source?
-                     if blk == link_creation["source_uuid"]:
-                          # Optional: Don't highlight self if not desired, 
-                          # but self-references are valid SQL.
-                          pass
-                     
-                     target_uuid = blk
-                     # Extract idx
-                     for t in tags:
-                         if t.startswith("col_idx:"):
-                             try: target_col_idx = int(t.split(":")[1])
-                             except: pass
-                     break
-            
-            # If found valid target, show indicator
-            if target_uuid and target_col_idx is not None:
-                # Calculate connection point
-                # is_source=False => Left side
-                pt = get_column_connection_point(target_uuid, target_col_idx, is_source=False)
-                if pt:
-                    # Draw or move indicator
-                    # Check if exists
-                    ind = canvas.find_withtag("link_target_indicator")
-                    r = 4
-                    if ind:
-                        canvas.coords(ind, pt[0]-r, pt[1]-r, pt[0]+r, pt[1]+r)
-                    else:
-                        canvas.create_oval(pt[0]-r, pt[1]-r, pt[0]+r, pt[1]+r, fill="blue", outline="blue", tags="link_target_indicator")
-            else:
-                 # Remove if not over valid target
-                 canvas.delete("link_target_indicator")
+            hovered = canvas.find_overlapping(cx - 1, cy - 1, cx + 1, cy + 1)
+            over_handle = any("resize_handle" in canvas.gettags(item) for item in hovered)
+            canvas.configure(cursor="bottom_right_corner" if over_handle else "")
 
+        if not link_creation["active"] or not link_creation["line_id"]:
+            return
+
+        cx = canvas.canvasx(event.x)
+        cy = canvas.canvasy(event.y)
+        coords = canvas.coords(link_creation["line_id"])
+        canvas.coords(link_creation["line_id"], coords[0], coords[1], cx, cy)
+
+        items = canvas.find_overlapping(cx - 1, cy - 1, cx + 1, cy + 1)
+        target_uuid = None
+        target_col_idx = None
+        for item in items:
+            tags = canvas.gettags(item)
+            block_tag = next((tag for tag in tags if tag.startswith("uml_block_")), None)
+            col_tag = next((tag for tag in tags if tag.startswith("col_idx:")), None)
+            if block_tag and col_tag:
+                target_uuid = block_tag
+                target_col_idx = int(col_tag.split(":", 1)[1])
+                break
+
+        canvas.delete("link_target_indicator")
+        if target_uuid and target_col_idx is not None:
+            point = get_column_connection_point(target_uuid, target_col_idx, is_source=False)
+            if point:
+                radius = 4
+                canvas.create_oval(
+                    point[0] - radius,
+                    point[1] - radius,
+                    point[0] + radius,
+                    point[1] + radius,
+                    fill="blue",
+                    outline="blue",
+                    tags="link_target_indicator",
+                )
 
     def on_release(event):
+        resize_state["active"] = False
         drag_data["item"] = None
+        canvas.configure(cursor="")
 
     def edit_text_item(item):
         # Retrieve tags to identify what we are editing
@@ -1737,9 +1689,6 @@ def main():
     canvas.bind("<Double-Button-1>", on_double_click)
     
     # Key bindings
-    root.bind("<Control-t>", toggle_resize_mode)
-    root.bind("<Control-T>", toggle_resize_mode) # Case insensitive safety
-
     # --- Zoom molette ---
     def zoom(event):
         # Determine scale factor
