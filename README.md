@@ -59,6 +59,16 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
    python3 app.pyw
    ```
 
+## Tests
+
+Run all unit tests from the repository root with:
+
+```bash
+python3 -m unittest discover -s "Unit Test" -p "test_*.py" -v
+```
+
+The command discovers every `test_*.py` file in `Unit Test`. The UI test requires a working Tk display; it is skipped automatically when no display is available.
+
 ## Correct Format
 
 The parser is designed to be resilient, but the following formatting rules help keep extraction accurate and deterministic.

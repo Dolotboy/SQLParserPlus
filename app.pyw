@@ -751,7 +751,7 @@ def main():
 
 
     
-    def add_view_block(view_name: str, view_x: int = 325, view_y: int = 85, add_to_model: bool = True, block_size=None):
+    def add_view_block(view_name: str = "View_Name", view_x: int = 325, view_y: int = 85, add_to_model: bool = True, block_size=None):
         nonlocal db_model
         if db_model is None:
             db_model = sqlp.DB()
@@ -1234,7 +1234,7 @@ def main():
     btn_rect = tk.Button(toolbar, text="Add Table", command=add_table_block)
     btn_rect.pack(side="left", padx=2, pady=2)
 
-    btn_circle = tk.Button(toolbar, text="Add Table", command=add_table_block)
+    btn_circle = tk.Button(toolbar, text="Add View", command=add_view_block)
     btn_circle.pack(side="left", padx=2, pady=2)
 
     # --- Scrollbars ---
